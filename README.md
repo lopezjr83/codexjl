@@ -143,3 +143,31 @@ Esto se ejecuta automáticamente en cada push/PR.
 ### 4) Alternativa simple en un solo servidor
 
 También puedes lanzar todo con `docker compose up --build` en una VM (AWS EC2, DigitalOcean, Azure VM) y publicar puertos con Nginx + HTTPS (Let's Encrypt).
+
+## Despliegue en Vercel (tu opción)
+
+Puedes desplegar **frontend y backend por separado** en Vercel:
+
+### Backend en Vercel
+
+1. Importa el repositorio en Vercel.
+2. En "Root Directory" selecciona `backend`.
+3. Configura variables de entorno del backend:
+   - `NODE_ENV=production`
+   - `MONGO_URI=<tu_uri_mongodb_atlas>`
+   - `JWT_SECRET=<secreto_muy_largo>`
+   - `JWT_EXPIRES_IN=1d`
+   - `CORS_ORIGIN=<url_frontend_vercel>`
+4. Deploy.
+
+Se añadió `backend/vercel.json` y `backend/api/index.js` para ejecutar Express como función serverless en Vercel.
+
+### Frontend en Vercel
+
+1. Crea otro proyecto en Vercel del mismo repo.
+2. En "Root Directory" selecciona `frontend`.
+3. Variable de entorno:
+   - `VITE_API_URL=https://<tu-backend>.vercel.app/api`
+4. Deploy.
+
+Se añadió `frontend/vercel.json` para soportar rutas SPA con React Router.

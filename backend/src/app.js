@@ -13,7 +13,12 @@ import { errorHandler, notFound } from './middleware/error.js';
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.corsOrigin }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || env.corsOriginList.includes(origin)) return callback(null, true);
+    return callback(new Error('Origen no permitido por CORS'));
+  }
+}));
 app.use(express.json({ limit: '1mb' }));
 app.use(mongoSanitize());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 200 }));
