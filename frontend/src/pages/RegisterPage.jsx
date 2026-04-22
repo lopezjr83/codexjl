@@ -1,0 +1,22 @@
+import { Link, useNavigate } from 'react-router-dom';
+import AuthForm from '../components/AuthForm';
+import { useAuth } from '../contexts/AuthContext';
+
+export default function RegisterPage() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const handleRegister = async ({ name, email, password }) => {
+    await register({ name, email, password, role: 'admin' });
+    navigate('/dashboard');
+  };
+
+  return (
+    <main className="auth-layout">
+      <AuthForm title="Crear cuenta" buttonLabel="Registrarme" onSubmit={handleRegister} includeName />
+      <p>
+        ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
+      </p>
+    </main>
+  );
+}
