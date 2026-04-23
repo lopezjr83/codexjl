@@ -174,7 +174,7 @@ Se añadió `frontend/vercel.json` para soportar rutas SPA con React Router.
 
 ## Usuario dueño automático
 
-Al iniciar el backend (local o Vercel), el sistema valida si existe el usuario dueño y si no existe lo crea automáticamente con:
+Al iniciar el backend (local o Vercel), el sistema intenta crear el usuario dueño `lopezjr@spadd.net`; si ya existe, continúa sin error:
 
 - Email: `lopezjr@spadd.net`
 - Contraseña: `Spadd001!`

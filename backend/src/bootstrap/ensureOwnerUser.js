@@ -14,14 +14,13 @@ export const ensureOwnerUser = async () => {
   if (ownerEnsured || !env.ownerAutocreate) return;
 
   try {
-    const existing = await User.findOne({ email: OWNER_DEFAULTS.email });
-    if (!existing) {
-      await User.create(OWNER_DEFAULTS);
-      console.log(`✅ Usuario dueño creado: ${OWNER_DEFAULTS.email}`);
-    }
-    ownerEnsured = true;
+    await User.create(OWNER_DEFAULTS);
+    console.log(`✅ Usuario dueño creado: ${OWNER_DEFAULTS.email}`);
   } catch (error) {
+    if (error?.code !== 11000) {
+      console.warn('⚠️ No se pudo validar/crear usuario dueño. Verifica permisos de MongoDB.', error.message);
+    }
+  } finally {
     ownerEnsured = true;
-    console.warn('⚠️ No se pudo validar/crear usuario dueño. Verifica permisos readWrite en MongoDB.', error.message);
   }
 };
