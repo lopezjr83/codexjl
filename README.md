@@ -212,3 +212,17 @@ El frontend normaliza automáticamente `VITE_API_URL` para que termine en `/api`
 Ejemplos válidos:
 - `VITE_API_URL=https://tu-backend.vercel.app`
 - `VITE_API_URL=https://tu-backend.vercel.app/api`
+
+
+## Permisos de MongoDB Atlas requeridos
+
+Si en Vercel ves errores como `user is not allowed to do action [find]`, el usuario de MongoDB no tiene permisos suficientes.
+
+Asigna al usuario de Atlas el rol:
+- `readWrite` sobre la base donde se conecta `MONGO_URI` (por ejemplo `VisitaClientesProveedores`)
+
+Opcionalmente puedes desactivar la creación automática del dueño con:
+
+```env
+OWNER_AUTOCREATE=false
+```
