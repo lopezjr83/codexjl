@@ -174,10 +174,55 @@ Se añadió `frontend/vercel.json` para soportar rutas SPA con React Router.
 
 ## Usuario dueño automático
 
-Al iniciar el backend (local o Vercel), el sistema valida si existe el usuario dueño y si no existe lo crea automáticamente con:
+Al iniciar el backend (local o Vercel), el sistema intenta crear el usuario dueño `lopezjr@spadd.net`; si ya existe, continúa sin error:
 
 - Email: `lopezjr@spadd.net`
 - Contraseña: `Spadd001!`
 - Rol: `admin`
 
 > Recomendación: cambiar la contraseña después del primer acceso por seguridad.
+
+## Nota para Vercel + MongoDB
+
+Si Vercel ya tiene acceso a MongoDB, el punto más común que impide funcionar al frontend es CORS.
+
+- En backend define `CORS_ORIGIN` con tu dominio frontend (puedes poner varios separados por coma).
+- Ejemplo:
+
+```env
+CORS_ORIGIN=http://localhost:5173,https://tu-frontend.vercel.app
+```
+
+En `NODE_ENV=production`, el backend también permite orígenes `*.vercel.app` para facilitar previews.
+
+## MongoDB: creación de colecciones
+
+En MongoDB no se crean tablas manualmente como en MySQL. En este proyecto:
+
+- La colección `users` se crea automáticamente al iniciar backend (por el bootstrap del usuario dueño).
+- La colección `clients` se crea al guardar el primer cliente.
+- La colección `visits` se crea al guardar la primera visita.
+
+Si backend ya conecta a Atlas, no necesitas crear estructuras manuales.
+
+## Nota de configuración de API en frontend
+
+El frontend normaliza automáticamente `VITE_API_URL` para que termine en `/api`.
+
+Ejemplos válidos:
+- `VITE_API_URL=https://tu-backend.vercel.app`
+- `VITE_API_URL=https://tu-backend.vercel.app/api`
+
+
+## Permisos de MongoDB Atlas requeridos
+
+Si en Vercel ves errores como `user is not allowed to do action [find]`, el usuario de MongoDB no tiene permisos suficientes.
+
+Asigna al usuario de Atlas el rol:
+- `readWrite` sobre la base donde se conecta `MONGO_URI` (por ejemplo `VisitaClientesProveedores`)
+
+Opcionalmente puedes desactivar la creación automática del dueño con:
+
+```env
+OWNER_AUTOCREATE=false
+```

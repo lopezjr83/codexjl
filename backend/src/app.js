@@ -12,15 +12,27 @@ import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
 
+const allowedOrigins = new Set(env.corsOriginList.filter(Boolean));
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.has('*') || allowedOrigins.has(origin)) return true;
+
+  if (origin.endsWith('.vercel.app')) return true;
+  return false;
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
+  credentials: true
+};
+
 app.use(helmet());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || env.corsOriginList.includes(origin)) return callback(null, true);
-      return callback(new Error('Origen no permitido por CORS'));
-    }
-  })
-);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 app.use(mongoSanitize());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 200 }));
