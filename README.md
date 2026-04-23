@@ -171,3 +171,13 @@ Se añadió `backend/vercel.json` y `backend/api/index.js` para ejecutar Express
 4. Deploy.
 
 Se añadió `frontend/vercel.json` para soportar rutas SPA con React Router.
+
+## Usuario dueño automático
+
+Al iniciar el backend (local o Vercel), el sistema valida si existe el usuario dueño y si no existe lo crea automáticamente con:
+
+- Email: `lopezjr@spadd.net`
+- Contraseña: `Spadd001!`
+- Rol: `admin`
+
+> Recomendación: cambiar la contraseña después del primer acceso por seguridad.
