@@ -204,3 +204,11 @@ En MongoDB no se crean tablas manualmente como en MySQL. En este proyecto:
 - La colección `visits` se crea al guardar la primera visita.
 
 Si backend ya conecta a Atlas, no necesitas crear estructuras manuales.
+
+## Nota de configuración de API en frontend
+
+El frontend normaliza automáticamente `VITE_API_URL` para que termine en `/api`.
+
+Ejemplos válidos:
+- `VITE_API_URL=https://tu-backend.vercel.app`
+- `VITE_API_URL=https://tu-backend.vercel.app/api`

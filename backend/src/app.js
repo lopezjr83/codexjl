@@ -18,7 +18,7 @@ const isAllowedOrigin = (origin) => {
   if (!origin) return true;
   if (allowedOrigins.has('*') || allowedOrigins.has(origin)) return true;
 
-  if (origin.endsWith('.vercel.app') && env.nodeEnv === 'production') return true;
+  if (origin.endsWith('.vercel.app')) return true;
   return false;
 };
 
