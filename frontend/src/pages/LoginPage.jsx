@@ -2,6 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
 import { useAuth } from '../contexts/AuthContext';
 
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'dev';
+
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ export default function LoginPage() {
       <p>
         ¿No tienes cuenta? <Link to="/register">Crear cuenta</Link>
       </p>
+      <small style={{ opacity: 0.7 }}>Versión: {APP_VERSION}</small>
     </main>
   );
 }

@@ -226,3 +226,13 @@ Opcionalmente puedes desactivar la creación automática del dueño con:
 ```env
 OWNER_AUTOCREATE=false
 ```
+
+## Versionado visible en frontend
+
+Puedes mostrar una versión en login/registro para identificar despliegues:
+
+```env
+VITE_APP_VERSION=1.0.3
+```
+
+Si no se define, se mostrará `dev`.
