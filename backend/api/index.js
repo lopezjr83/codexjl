@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import app from '../src/app.js';
 import { env } from '../src/config/env.js';
+import { ensureOwnerUser } from '../src/bootstrap/ensureOwnerUser.js';
 
 const globalForMongoose = globalThis;
 
@@ -31,5 +32,6 @@ const connectDB = async () => {
 
 export default async function handler(req, res) {
   await connectDB();
+  await ensureOwnerUser();
   return app(req, res);
 }
