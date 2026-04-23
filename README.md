@@ -181,3 +181,16 @@ Al iniciar el backend (local o Vercel), el sistema valida si existe el usuario d
 - Rol: `admin`
 
 > Recomendación: cambiar la contraseña después del primer acceso por seguridad.
+
+## Nota para Vercel + MongoDB
+
+Si Vercel ya tiene acceso a MongoDB, el punto más común que impide funcionar al frontend es CORS.
+
+- En backend define `CORS_ORIGIN` con tu dominio frontend (puedes poner varios separados por coma).
+- Ejemplo:
+
+```env
+CORS_ORIGIN=http://localhost:5173,https://tu-frontend.vercel.app
+```
+
+En `NODE_ENV=production`, el backend también permite orígenes `*.vercel.app` para facilitar previews.
