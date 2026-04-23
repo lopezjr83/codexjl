@@ -194,3 +194,13 @@ CORS_ORIGIN=http://localhost:5173,https://tu-frontend.vercel.app
 ```
 
 En `NODE_ENV=production`, el backend también permite orígenes `*.vercel.app` para facilitar previews.
+
+## MongoDB: creación de colecciones
+
+En MongoDB no se crean tablas manualmente como en MySQL. En este proyecto:
+
+- La colección `users` se crea automáticamente al iniciar backend (por el bootstrap del usuario dueño).
+- La colección `clients` se crea al guardar el primer cliente.
+- La colección `visits` se crea al guardar la primera visita.
+
+Si backend ya conecta a Atlas, no necesitas crear estructuras manuales.
