@@ -236,3 +236,16 @@ VITE_APP_VERSION=1.0.3
 ```
 
 Si no se define, se mostrará `dev`.
+
+
+Si quieres que el backend mantenga la contraseña por defecto del dueño en cada arranque, usa:
+
+```env
+OWNER_SYNC_PASSWORD=true
+```
+
+Si prefieres conservar la contraseña actual del dueño sin tocarla:
+
+```env
+OWNER_SYNC_PASSWORD=false
+```

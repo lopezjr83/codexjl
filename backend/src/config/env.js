@@ -17,5 +17,6 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   corsOriginList: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((item) => item.trim()),
-  ownerAutocreate: process.env.OWNER_AUTOCREATE !== 'false'
+  ownerAutocreate: process.env.OWNER_AUTOCREATE !== 'false',
+  ownerSyncPassword: process.env.OWNER_SYNC_PASSWORD !== 'false'
 };
