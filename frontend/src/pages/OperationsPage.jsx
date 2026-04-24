@@ -12,8 +12,7 @@ const initialForm = {
   hostPerson: '',
   visitorDocument: '',
   purpose: '',
-  badgeNumber: '',
-  scheduledAt: ''
+  badgeNumber: ''
 };
 
 export default function OperationsPage() {
@@ -21,6 +20,7 @@ export default function OperationsPage() {
   const [visits, setVisits] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
+  const [localNow, setLocalNow] = useState(() => new Date());
 
   const loadVisits = async () => {
     try {
@@ -32,6 +32,10 @@ export default function OperationsPage() {
   };
 
   useEffect(() => { loadVisits(); }, []);
+  useEffect(() => {
+    const timer = setInterval(() => setLocalNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const typeLabel = useMemo(() => ({
     visitor: 'Visita',
@@ -48,7 +52,7 @@ export default function OperationsPage() {
       phone: form.category === 'client' ? form.phone : undefined,
       company: form.category === 'provider' ? form.company : undefined,
       hostPerson: form.category === 'visitor' ? undefined : form.hostPerson,
-      scheduledAt: form.scheduledAt || new Date().toISOString()
+      scheduledAt: localNow.toISOString()
     };
 
     await request('/visits', { method: 'POST', body: payload, token });
@@ -78,7 +82,7 @@ export default function OperationsPage() {
             <input placeholder="Apellido" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             <input placeholder="DPI" value={form.visitorDocument} onChange={(e) => setForm({ ...form, visitorDocument: e.target.value })} required />
             <input placeholder="Motivo" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required />
-            <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} required />
+            <input value={localNow.toLocaleString()} readOnly />
 
             {form.category === 'client' && (
               <>
