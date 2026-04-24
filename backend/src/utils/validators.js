@@ -75,7 +75,7 @@ export const visitSchema = Joi.object({
   visitorName: Joi.string().required(),
   visitorDocument: Joi.string().required(),
   purpose: Joi.string().required(),
-  scheduledAt: Joi.date().required(),
+  scheduledAt: Joi.date().optional(),
   status: Joi.string().valid('scheduled', 'checked_in', 'completed', 'cancelled').optional(),
   checkedInAt: Joi.date().optional(),
   checkedOutAt: Joi.date().optional()

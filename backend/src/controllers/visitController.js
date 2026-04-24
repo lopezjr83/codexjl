@@ -2,10 +2,12 @@ import { Visit } from '../models/Visit.js';
 import { logAudit } from '../utils/audit.js';
 
 export const createVisit = async (req, res) => {
+  const now = new Date();
   const payload = {
     ...req.body,
-    status: req.body.status || 'checked_in',
-    checkedInAt: req.body.checkedInAt || req.body.scheduledAt || new Date(),
+    status: 'checked_in',
+    scheduledAt: now,
+    checkedInAt: now,
     createdBy: req.user._id
   };
   const visit = await Visit.create(payload);
