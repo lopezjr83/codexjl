@@ -2,7 +2,13 @@ import { Visit } from '../models/Visit.js';
 import { logAudit } from '../utils/audit.js';
 
 export const createVisit = async (req, res) => {
-  const visit = await Visit.create({ ...req.body, createdBy: req.user._id });
+  const payload = {
+    ...req.body,
+    status: req.body.status || 'checked_in',
+    checkedInAt: req.body.checkedInAt || req.body.scheduledAt || new Date(),
+    createdBy: req.user._id
+  };
+  const visit = await Visit.create(payload);
   const populated = await visit.populate('client', 'companyName contactName');
   await logAudit({ req, action: 'visit.create', entityType: 'visit', entityId: visit._id, metadata: { category: visit.category } });
   res.status(201).json(populated);
