@@ -6,10 +6,16 @@ import DashboardPage from './pages/DashboardPage';
 import OperationsPage from './pages/OperationsPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import { hasFeatureAccess } from './utils/permissions';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+const FeatureRoute = ({ feature, children }) => {
+  const { user } = useAuth();
+  return hasFeatureAccess(user, feature) ? children : <Navigate to="/dashboard" replace />;
 };
 
 export default function App() {
@@ -24,7 +30,9 @@ export default function App() {
         path="/dashboard"
         element={
           <PrivateRoute>
-            <DashboardPage />
+            <FeatureRoute feature="dashboard">
+              <DashboardPage />
+            </FeatureRoute>
           </PrivateRoute>
         }
       />
@@ -32,7 +40,9 @@ export default function App() {
         path="/operations"
         element={
           <PrivateRoute>
-            <OperationsPage />
+            <FeatureRoute feature="operations">
+              <OperationsPage />
+            </FeatureRoute>
           </PrivateRoute>
         }
       />
@@ -40,7 +50,9 @@ export default function App() {
         path="/profile"
         element={
           <PrivateRoute>
-            <ProfilePage />
+            <FeatureRoute feature="profile">
+              <ProfilePage />
+            </FeatureRoute>
           </PrivateRoute>
         }
       />
@@ -48,7 +60,9 @@ export default function App() {
         path="/admin/users"
         element={
           <PrivateRoute>
-            <AdminUsersPage />
+            <FeatureRoute feature="usersAdmin">
+              <AdminUsersPage />
+            </FeatureRoute>
           </PrivateRoute>
         }
       />

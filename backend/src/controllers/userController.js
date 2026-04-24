@@ -1,4 +1,4 @@
-import { User } from '../models/User.js';
+import { User, getDefaultPermissions } from '../models/User.js';
 import { logAudit } from '../utils/audit.js';
 
 const sanitizeUser = (user) => ({
@@ -7,6 +7,7 @@ const sanitizeUser = (user) => ({
   email: user.email,
   phone: user.phone,
   role: user.role,
+  permissions: getDefaultPermissions(user.role, user.permissions || {}),
   isActive: user.isActive,
   createdAt: user.createdAt
 });
@@ -20,7 +21,13 @@ export const createUser = async (req, res) => {
   const exists = await User.findOne({ email: req.body.email });
   if (exists) return res.status(409).json({ message: 'El correo ya existe' });
 
-  const user = await User.create(req.body);
+  const payload = {
+    ...req.body,
+    role: 'staff',
+    permissions: getDefaultPermissions('staff', req.body.permissions || {})
+  };
+
+  const user = await User.create(payload);
   await logAudit({ req, action: 'user.create', entityType: 'user', entityId: user._id, metadata: { role: user.role } });
   res.status(201).json(sanitizeUser(user));
 };
@@ -28,6 +35,13 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   const update = { ...req.body };
   delete update.password;
+  if (update.role) {
+    update.permissions = getDefaultPermissions(update.role, update.permissions || {});
+  } else if (update.permissions) {
+    const current = await User.findById(req.params.id);
+    if (!current) return res.status(404).json({ message: 'Usuario no encontrado' });
+    update.permissions = getDefaultPermissions(current.role, update.permissions);
+  }
 
   const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
   if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });

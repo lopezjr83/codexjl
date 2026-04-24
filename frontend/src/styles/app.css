@@ -103,6 +103,21 @@ button.danger { background: #bf1c44; }
   justify-content: space-between;
   align-items: center;
 }
+.access-editor {
+  margin-top: .5rem;
+  display: grid;
+  gap: .5rem;
+}
+.permission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: .35rem .8rem;
+}
+.permission-grid label {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
 .error-msg { color: #b00020; }
 .kpi-grid {
   margin-top: 1rem;
