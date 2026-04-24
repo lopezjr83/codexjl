@@ -126,6 +126,18 @@ button.danger { background: #bf1c44; }
   justify-content: space-between;
   align-items: center;
 }
+.active-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--active-cols, 2), minmax(220px, 1fr));
+  gap: .5rem;
+}
+.active-visit-card {
+  padding: .5rem .65rem !important;
+  min-height: 88px;
+}
+.active-visit-card p {
+  margin: .2rem 0 0;
+}
 .user-card-compact {
   padding: .45rem .7rem !important;
   min-height: 76px;
@@ -282,6 +294,9 @@ button.danger { background: #bf1c44; }
     align-items: stretch;
   }
   .history-filters {
+    grid-template-columns: 1fr;
+  }
+  .active-cards-grid {
     grid-template-columns: 1fr;
   }
 }

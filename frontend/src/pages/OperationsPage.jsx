@@ -23,6 +23,8 @@ export default function OperationsPage() {
   const [localNow, setLocalNow] = useState(() => new Date());
   const [showForm, setShowForm] = useState(false);
   const [historyFilters, setHistoryFilters] = useState({ search: '', category: 'all', dateFrom: '', dateTo: '' });
+  const [activeLimit, setActiveLimit] = useState(4);
+  const [expandedActive, setExpandedActive] = useState({});
 
   const loadVisits = async () => {
     try {
@@ -41,6 +43,7 @@ export default function OperationsPage() {
 
   const typeLabel = useMemo(() => ({ visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' }), []);
   const activeVisits = useMemo(() => visits.filter((visit) => visit.status !== 'completed'), [visits]);
+  const visibleActiveVisits = useMemo(() => activeVisits.slice(0, activeLimit), [activeVisits, activeLimit]);
   const historyVisits = useMemo(() => visits.filter((visit) => visit.status === 'completed'), [visits]);
   const filteredHistoryVisits = useMemo(() => {
     return historyVisits.filter((visit) => {
@@ -131,16 +134,31 @@ export default function OperationsPage() {
       )}
 
       <section className="panel">
-        <h3>Visitas activas</h3>
-        <ul className="list">
-          {activeVisits.map((visit) => (
-            <li key={visit._id}>
+        <div className="panel-head-inline">
+          <h3>Visitas activas</h3>
+          <label>
+            Tarjetas visibles
+            <select value={activeLimit} onChange={(e) => setActiveLimit(Number(e.target.value))}>
+              {[2, 4, 6, 8, 10, 12].map((num) => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <ul className="list active-cards-grid" style={{ '--active-cols': String(Math.min(activeLimit, 4)) }}>
+          {visibleActiveVisits.map((visit) => (
+            <li key={visit._id} className="active-visit-card">
               <div>
                 <strong>{visit.visitorName}</strong>
                 <p>{typeLabel[visit.category] || visit.category} · A quien visita: {visit.hostPerson || '—'} · Motivo: {visit.purpose}</p>
-                <p>DPI: {visit.visitorDocument} · Entrada: {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
+                {expandedActive[visit._id] && (
+                  <p>DPI: {visit.visitorDocument} · Entrada: {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
+                )}
               </div>
               <div className="user-card-actions">
+                <button onClick={() => setExpandedActive((prev) => ({ ...prev, [visit._id]: !prev[visit._id] }))}>
+                  {expandedActive[visit._id] ? 'Ocultar detalles' : 'Ver detalles'}
+                </button>
                 <button
                   onClick={async () => {
                     await request(`/visits/${visit._id}/check-out`, { method: 'PUT', token });
