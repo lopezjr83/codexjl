@@ -148,14 +148,16 @@ export default function OperationsPage() {
         <ul className="list active-cards-grid" style={{ '--active-cols': String(Math.min(activeLimit, 4)) }}>
           {visibleActiveVisits.map((visit) => (
             <li key={visit._id} className="active-visit-card">
-              <div>
+              <div className="active-visit-body">
                 <strong>{visit.visitorName}</strong>
-                <p>{typeLabel[visit.category] || visit.category} · A quien visita: {visit.hostPerson || '—'} · Motivo: {visit.purpose}</p>
+                <p><span>Tipo:</span> {typeLabel[visit.category] || visit.category}</p>
+                <p><span>A quien visita:</span> {visit.hostPerson || '—'}</p>
+                <p><span>Motivo:</span> {visit.purpose}</p>
                 {expandedActive[visit._id] && (
-                  <p>DPI: {visit.visitorDocument} · Entrada: {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
+                  <p><span>Detalle:</span> DPI {visit.visitorDocument} · Entrada {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
                 )}
               </div>
-              <div className="user-card-actions">
+              <div className="user-card-actions active-actions">
                 <button onClick={() => setExpandedActive((prev) => ({ ...prev, [visit._id]: !prev[visit._id] }))}>
                   {expandedActive[visit._id] ? 'Ocultar detalles' : 'Ver detalles'}
                 </button>
