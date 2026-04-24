@@ -22,6 +22,7 @@ export default function OperationsPage() {
   const [error, setError] = useState('');
   const [localNow, setLocalNow] = useState(() => new Date());
   const [showForm, setShowForm] = useState(false);
+  const [historyFilters, setHistoryFilters] = useState({ search: '', category: 'all', dateFrom: '', dateTo: '' });
 
   const loadVisits = async () => {
     try {
@@ -41,6 +42,25 @@ export default function OperationsPage() {
   const typeLabel = useMemo(() => ({ visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' }), []);
   const activeVisits = useMemo(() => visits.filter((visit) => visit.status !== 'completed'), [visits]);
   const historyVisits = useMemo(() => visits.filter((visit) => visit.status === 'completed'), [visits]);
+  const filteredHistoryVisits = useMemo(() => {
+    return historyVisits.filter((visit) => {
+      const text = `${visit.visitorName} ${visit.hostPerson || ''} ${visit.purpose}`.toLowerCase();
+      const matchesSearch = !historyFilters.search || text.includes(historyFilters.search.toLowerCase());
+      const matchesCategory = historyFilters.category === 'all' || visit.category === historyFilters.category;
+      const entryDate = new Date(visit.checkedInAt || visit.scheduledAt);
+      const matchesFrom = !historyFilters.dateFrom || entryDate >= new Date(`${historyFilters.dateFrom}T00:00:00`);
+      const matchesTo = !historyFilters.dateTo || entryDate <= new Date(`${historyFilters.dateTo}T23:59:59`);
+      return matchesSearch && matchesCategory && matchesFrom && matchesTo;
+    });
+  }, [historyVisits, historyFilters]);
+
+  const formatDuration = (visit) => {
+    if (!visit.checkedOutAt || !visit.checkedInAt) return '—';
+    const minutes = Math.max(0, Math.round((new Date(visit.checkedOutAt).getTime() - new Date(visit.checkedInAt).getTime()) / 60000));
+    const hours = Math.floor(minutes / 60);
+    const rem = minutes % 60;
+    return hours ? `${hours}h ${rem}m` : `${rem}m`;
+  };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -138,6 +158,21 @@ export default function OperationsPage() {
 
       <section className="panel">
         <h3>Histórico de salidas</h3>
+        <div className="history-filters">
+          <input
+            placeholder="Buscar por nombre, motivo o a quien visita"
+            value={historyFilters.search}
+            onChange={(e) => setHistoryFilters({ ...historyFilters, search: e.target.value })}
+          />
+          <select value={historyFilters.category} onChange={(e) => setHistoryFilters({ ...historyFilters, category: e.target.value })}>
+            <option value="all">Todas las categorías</option>
+            <option value="visitor">Visita</option>
+            <option value="client">Cliente</option>
+            <option value="provider">Proveedor</option>
+          </select>
+          <input type="date" value={historyFilters.dateFrom} onChange={(e) => setHistoryFilters({ ...historyFilters, dateFrom: e.target.value })} />
+          <input type="date" value={historyFilters.dateTo} onChange={(e) => setHistoryFilters({ ...historyFilters, dateTo: e.target.value })} />
+        </div>
         <div className="table-wrap">
           <table className="history-table">
             <thead>
@@ -148,10 +183,11 @@ export default function OperationsPage() {
                 <th>Motivo</th>
                 <th>Entrada</th>
                 <th>Salida</th>
+                <th>Tiempo activo</th>
               </tr>
             </thead>
             <tbody>
-              {historyVisits.map((visit) => (
+              {filteredHistoryVisits.map((visit) => (
                 <tr key={visit._id}>
                   <td>{visit.visitorName}</td>
                   <td>{typeLabel[visit.category] || visit.category}</td>
@@ -159,6 +195,7 @@ export default function OperationsPage() {
                   <td>{visit.purpose}</td>
                   <td>{new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</td>
                   <td>{visit.checkedOutAt ? new Date(visit.checkedOutAt).toLocaleString() : '—'}</td>
+                  <td>{formatDuration(visit)}</td>
                 </tr>
               ))}
             </tbody>
