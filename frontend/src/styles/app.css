@@ -191,6 +191,12 @@ button.danger { background: #bf1c44; }
   border-bottom: 1px solid #e6eaf2;
   padding: .55rem .35rem;
 }
+.history-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: .5rem;
+  margin-bottom: .7rem;
+}
 .error-msg { color: #b00020; }
 .kpi-grid {
   margin-top: 1rem;
@@ -274,5 +280,8 @@ button.danger { background: #bf1c44; }
   .panel-head-inline {
     flex-direction: column;
     align-items: stretch;
+  }
+  .history-filters {
+    grid-template-columns: 1fr;
   }
 }
