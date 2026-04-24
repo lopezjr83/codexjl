@@ -25,11 +25,14 @@ export default function OperationsPage() {
   const [historyFilters, setHistoryFilters] = useState({ search: '', category: 'all', dateFrom: '', dateTo: '' });
   const [activeLimit, setActiveLimit] = useState(4);
   const [expandedActive, setExpandedActive] = useState({});
+  const [visitTypes, setVisitTypes] = useState({});
 
   const loadVisits = async () => {
     try {
       const visitsData = await request('/visits', { token });
       setVisits(visitsData || []);
+      const typesData = await request('/visit-types', { token });
+      setVisitTypes(typesData || {});
     } catch (e) {
       setError(e.message);
     }
@@ -41,7 +44,11 @@ export default function OperationsPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const typeLabel = useMemo(() => ({ visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' }), []);
+  const typeLabel = useMemo(() => ({
+    visitor: visitTypes.visitor?.label || 'Visita',
+    client: visitTypes.client?.label || 'Cliente',
+    provider: visitTypes.provider?.label || 'Proveedor'
+  }), [visitTypes]);
   const activeVisits = useMemo(() => visits.filter((visit) => visit.status !== 'completed'), [visits]);
   const visibleActiveVisits = useMemo(() => activeVisits.slice(0, activeLimit), [activeVisits, activeLimit]);
   const historyVisits = useMemo(() => visits.filter((visit) => visit.status === 'completed'), [visits]);
@@ -148,11 +155,12 @@ export default function OperationsPage() {
         <ul className="list active-cards-grid" style={{ '--active-cols': String(Math.min(activeLimit, 4)) }}>
           {visibleActiveVisits.map((visit) => (
             <li key={visit._id} className="active-visit-card">
-              <div className="active-visit-body">
+              <div className="active-visit-body" style={{ borderLeft: `8px solid ${visitTypes[visit.category]?.color || '#1f2937'}` }}>
                 <strong>{visit.visitorName}</strong>
                 <p><span>Tipo:</span> {typeLabel[visit.category] || visit.category}</p>
                 <p><span>A quien visita:</span> {visit.hostPerson || '—'}</p>
                 <p><span>Motivo:</span> {visit.purpose}</p>
+                {visit.badgeNumber && <p><span>Tarjeta:</span> {visit.badgeNumber}</p>}
                 {expandedActive[visit._id] && (
                   <p><span>Detalle:</span> DPI {visit.visitorDocument} · Entrada {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
                 )}
