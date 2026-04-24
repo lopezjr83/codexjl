@@ -249,3 +249,20 @@ Si prefieres conservar la contraseña actual del dueño sin tocarla:
 ```env
 OWNER_SYNC_PASSWORD=false
 ```
+
+## Fase 1 implementada
+
+### Perfil de usuario
+- `GET /api/auth/me`
+- `PUT /api/auth/me`
+- `PUT /api/auth/me/password`
+
+### Administración de usuarios (solo admin)
+- `GET /api/users`
+- `POST /api/users`
+- `PUT /api/users/:id`
+- `PUT /api/users/:id/reset-password`
+
+### Dashboard mejorado
+- KPIs de visitas activas, salidas del día, proveedores dentro y promedio de tiempo en sitio.
+- Versionado visible en frontend con `VITE_APP_VERSION`.

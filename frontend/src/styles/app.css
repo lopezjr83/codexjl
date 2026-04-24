@@ -56,3 +56,17 @@ button.danger { background: #bf1c44; }
   align-items: center;
 }
 .error-msg { color: #b00020; }
+.kpi-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .75rem;
+}
+.kpi-card {
+  background: #0f1d45;
+  color: white;
+  border-radius: 12px;
+  padding: .75rem;
+}
+.kpi-card h3 { margin: 0; font-size: .9rem; opacity: .8; }
+.kpi-card strong { font-size: 1.4rem; }
