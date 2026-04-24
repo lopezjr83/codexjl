@@ -132,39 +132,52 @@ button.danger { background: #bf1c44; }
   gap: .5rem;
 }
 .active-visit-card {
-  padding: .5rem .65rem !important;
-  min-height: 120px;
+  padding: .7rem .8rem !important;
+  min-height: 132px;
   align-items: flex-start !important;
   color: #0f172a;
   border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .18);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.active-visit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(15, 23, 42, .22);
 }
 .active-visit-card p {
-  margin: .12rem 0 0;
+  margin: .18rem 0 0;
+  line-height: 1.22;
 }
 .active-visit-body p span {
   font-weight: 600;
+}
+.active-visit-body strong {
+  font-size: 1.05rem;
 }
 .visit-head {
   display: flex;
   align-items: flex-start;
   gap: .5rem;
-  margin-bottom: .3rem;
+  margin-bottom: .42rem;
 }
 .visit-badge-number {
   background: #fff;
   border: 2px solid #1f2937;
-  border-radius: 8px;
+  border-radius: 10px;
   min-width: 42px;
   text-align: center;
-  padding: .1rem .35rem;
+  padding: .12rem .4rem;
   font-weight: 700;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, .2);
 }
 .active-actions {
   display: grid;
   gap: .35rem;
 }
 .active-actions button {
-  min-width: 116px;
+  min-width: 124px;
+  border-radius: 10px;
 }
 .user-card-compact {
   padding: .45rem .7rem !important;
@@ -229,13 +242,16 @@ button.danger { background: #bf1c44; }
 .history-table th, .history-table td {
   text-align: left;
   border-bottom: 1px solid #e6eaf2;
-  padding: .55rem .35rem;
+  padding: .62rem .38rem;
 }
 .history-filters {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: .5rem;
   margin-bottom: .7rem;
+}
+.history-table thead th {
+  color: #0f1d45;
 }
 .error-msg { color: #b00020; }
 .kpi-grid {
