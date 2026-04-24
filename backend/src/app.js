@@ -16,12 +16,20 @@ import { errorHandler, notFound } from './middleware/error.js';
 const app = express();
 
 const allowedOrigins = new Set(env.corsOriginList.filter(Boolean));
+const allowedOriginSuffixes = env.corsOriginSuffixList;
 
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
   if (allowedOrigins.has('*') || allowedOrigins.has(origin)) return true;
 
-  if (origin.endsWith('.vercel.app')) return true;
+  let hostname = '';
+  try {
+    hostname = new URL(origin).hostname;
+  } catch {
+    return false;
+  }
+
+  if (allowedOriginSuffixes.some((suffix) => hostname.endsWith(suffix))) return true;
   return false;
 };
 

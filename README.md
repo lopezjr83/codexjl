@@ -73,6 +73,7 @@ MONGO_URI=mongodb://localhost:27017/visits_control
 JWT_SECRET=change_me_super_secure
 JWT_EXPIRES_IN=1d
 CORS_ORIGIN=http://localhost:5173
+CORS_ORIGIN_SUFFIXES=.vercel.app
 ```
 
 ## Endpoints API
@@ -158,6 +159,7 @@ Puedes desplegar **frontend y backend por separado** en Vercel:
    - `JWT_SECRET=<secreto_muy_largo>`
    - `JWT_EXPIRES_IN=1d`
    - `CORS_ORIGIN=<url_frontend_vercel>`
+   - `CORS_ORIGIN_SUFFIXES=.vercel.app,.tu-dominio.com`
 4. Deploy.
 
 Se añadió `backend/vercel.json` y `backend/api/index.js` para ejecutar Express como función serverless en Vercel.
@@ -187,13 +189,15 @@ Al iniciar el backend (local o Vercel), el sistema intenta crear el usuario due�
 Si Vercel ya tiene acceso a MongoDB, el punto más común que impide funcionar al frontend es CORS.
 
 - En backend define `CORS_ORIGIN` con tu dominio frontend (puedes poner varios separados por coma).
+- Si usas varios subdominios o previews, usa `CORS_ORIGIN_SUFFIXES`.
 - Ejemplo:
 
 ```env
 CORS_ORIGIN=http://localhost:5173,https://tu-frontend.vercel.app
+CORS_ORIGIN_SUFFIXES=.vercel.app,.spadd.net
 ```
 
-En `NODE_ENV=production`, el backend también permite orígenes `*.vercel.app` para facilitar previews.
+Con `CORS_ORIGIN_SUFFIXES` puedes permitir orígenes por sufijo sin listar cada subdominio.
 
 ## MongoDB: creación de colecciones
 
