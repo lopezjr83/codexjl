@@ -266,3 +266,14 @@ OWNER_SYNC_PASSWORD=false
 ### Dashboard mejorado
 - KPIs de visitas activas, salidas del día, proveedores dentro y promedio de tiempo en sitio.
 - Versionado visible en frontend con `VITE_APP_VERSION`.
+
+## Fase 2 implementada
+
+### Operación en sitio
+- `PUT /api/visits/:id/check-in`
+- `PUT /api/visits/:id/check-out`
+
+### Dashboard y monitoreo
+- Alertas de visitas con más de 120 minutos en sitio.
+- Filtros por estatus y categoría en el panel de visitas.
+- Indicadores operativos para clientes/proveedores/visitas activas.

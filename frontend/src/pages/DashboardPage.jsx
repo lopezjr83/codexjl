@@ -41,7 +41,8 @@ export default function DashboardPage() {
     const completedToday = visits.filter((v) => v.checkedOutAt && new Date(v.checkedOutAt).toDateString() === new Date().toDateString());
     const providerInside = active.filter((v) => v.category === 'provider').length;
     const avgMinutes = active.length ? Math.round(active.reduce((acc, v) => acc + hoursInSite(v), 0) / active.length) : 0;
-    return { activeCount: active.length, completedTodayCount: completedToday.length, providerInside, avgMinutes };
+    const alerts = active.filter((v) => hoursInSite(v) >= 120).length;
+    return { activeCount: active.length, completedTodayCount: completedToday.length, providerInside, avgMinutes, alerts };
   }, [visits]);
 
   return (
@@ -59,6 +60,7 @@ export default function DashboardPage() {
         <article className="kpi-card"><h3>Salidas hoy</h3><strong>{kpis.completedTodayCount}</strong></article>
         <article className="kpi-card"><h3>Proveedores dentro</h3><strong>{kpis.providerInside}</strong></article>
         <article className="kpi-card"><h3>Promedio min dentro</h3><strong>{kpis.avgMinutes}</strong></article>
+        <article className="kpi-card"><h3>Alertas > 120 min</h3><strong>{kpis.alerts}</strong></article>
       </section>
 
       {error && <p className="error-msg">{error}</p>}
@@ -91,6 +93,14 @@ export default function DashboardPage() {
           clients={clients}
           onCreate={async (payload) => {
             await request('/visits', { method: 'POST', body: payload, token });
+            await loadAll();
+          }}
+          onCheckIn={async (id) => {
+            await request(`/visits/${id}/check-in`, { method: 'PUT', token });
+            await loadAll();
+          }}
+          onCheckOut={async (id) => {
+            await request(`/visits/${id}/check-out`, { method: 'PUT', token });
             await loadAll();
           }}
           onDelete={async (id) => {
