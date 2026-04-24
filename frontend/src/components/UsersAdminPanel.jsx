@@ -13,6 +13,7 @@ const permissionFields = [
 export default function UsersAdminPanel({ users, onCreate, onToggleActive, onResetPassword, onUpdateAccess }) {
   const [form, setForm] = useState(emptyUser);
   const [drafts, setDrafts] = useState({});
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const mappedUsers = useMemo(
     () => users.map((user) => ({ ...user, effectivePermissions: getEffectivePermissions(user) })),
@@ -54,6 +55,8 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
     }));
   };
 
+  const selectedUser = mappedUsers.find((user) => user.id === selectedUserId) || null;
+
   return (
     <section className="panel">
       <h2>Administración de usuarios</h2>
@@ -67,47 +70,66 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
       </form>
 
       <ul className="list">
-        {mappedUsers.map((user) => {
-          const draft = getDraft(user);
-          return (
-            <li key={user.id}>
-              <div style={{ width: '100%' }}>
-                <strong>{user.name}</strong>
-                <p>{user.email} · {user.role} · {user.isActive ? 'Activo' : 'Inactivo'}</p>
+        {mappedUsers.map((user) => (
+          <li key={user.id}>
+            <div>
+              <strong>{user.name}</strong>
+              <p>{user.email} · {user.role} · {user.isActive ? 'Activo' : 'Inactivo'}</p>
+            </div>
 
-                <div className="access-editor">
-                  <label>
-                    Rol
-                    <select value={draft.role} onChange={(e) => setRole(user, e.target.value)}>
-                      <option value="staff">Usuario</option>
-                      <option value="admin">Administrativo</option>
-                    </select>
-                  </label>
-
-                  <div className="permission-grid">
-                    {permissionFields.map((field) => (
-                      <label key={field.key}>
-                        <input
-                          type="checkbox"
-                          checked={Boolean(draft.permissions[field.key])}
-                          disabled={draft.role === 'admin' && field.key !== 'usersAdmin'}
-                          onChange={() => togglePermission(user, field.key)}
-                        />
-                        {field.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gap: '.5rem' }}>
-                <button onClick={() => onUpdateAccess(user.id, draft)}>Guardar acceso</button>
-                <button onClick={() => onToggleActive(user)}>{user.isActive ? 'Desactivar' : 'Activar'}</button>
-                <button className="danger" onClick={() => onResetPassword(user.id)}>Reset pass</button>
-              </div>
-            </li>
-          );
-        })}
+            <div style={{ display: 'grid', gap: '.5rem' }}>
+              <button onClick={() => setSelectedUserId(user.id)}>Permisos</button>
+              <button onClick={() => onToggleActive(user)}>{user.isActive ? 'Desactivar' : 'Activar'}</button>
+              <button className="danger" onClick={() => onResetPassword(user.id)}>Reset pass</button>
+            </div>
+          </li>
+        ))}
       </ul>
+
+      {selectedUser && (
+        <section className="modal-backdrop" onClick={() => setSelectedUserId(null)}>
+          <article className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Permisos de {selectedUser.name}</h3>
+            <p>{selectedUser.email}</p>
+
+            <div className="access-editor">
+              <label>
+                Rol
+                <select value={getDraft(selectedUser).role} onChange={(e) => setRole(selectedUser, e.target.value)}>
+                  <option value="staff">Usuario</option>
+                  <option value="admin">Administrativo</option>
+                </select>
+              </label>
+
+              <div className="permission-grid">
+                {permissionFields.map((field) => (
+                  <label key={field.key}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(getDraft(selectedUser).permissions[field.key])}
+                      disabled={getDraft(selectedUser).role === 'admin'}
+                      onChange={() => togglePermission(selectedUser, field.key)}
+                    />
+                    {field.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={async () => {
+                  await onUpdateAccess(selectedUser.id, getDraft(selectedUser));
+                  setSelectedUserId(null);
+                }}
+              >
+                Guardar acceso
+              </button>
+              <button className="danger" onClick={() => setSelectedUserId(null)}>Cerrar</button>
+            </div>
+          </article>
+        </section>
+      )}
     </section>
   );
 }
