@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { request } from '../api/http';
-import ClientsPanel from '../components/ClientsPanel';
-import VisitsPanel from '../components/VisitsPanel';
-import ProfilePanel from '../components/ProfilePanel';
-import UsersAdminPanel from '../components/UsersAdminPanel';
+import AppShell from '../components/AppShell';
 
 const hoursInSite = (visit) => {
   const start = visit.checkedInAt ? new Date(visit.checkedInAt).getTime() : null;
@@ -14,26 +12,17 @@ const hoursInSite = (visit) => {
 };
 
 export default function DashboardPage() {
-  const { token, user, logout, refreshMe } = useAuth();
-  const [clients, setClients] = useState([]);
+  const { token, user } = useAuth();
   const [visits, setVisits] = useState([]);
-  const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [error, setError] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const loadAll = async () => {
     try {
-      const requests = [request('/clients', { token }), request('/visits', { token })];
-      if (user?.role === 'admin') {
-        requests.push(request('/users', { token }));
-        requests.push(request('/audit-logs?limit=30', { token }));
-      }
-
-      const [clientsData, visitsData, usersData, auditData] = await Promise.all(requests);
-      setClients(clientsData);
-      setVisits(visitsData);
-      setUsers(usersData || []);
+      const requests = [request('/visits', { token })];
+      if (user?.role === 'admin') requests.push(request('/audit-logs?limit=10', { token }));
+      const [visitsData, auditData] = await Promise.all(requests);
+      setVisits(visitsData || []);
       setAuditLogs(auditData || []);
     } catch (e) {
       setError(e.message);
@@ -41,21 +30,6 @@ export default function DashboardPage() {
   };
 
   useEffect(() => { loadAll(); }, []);
-
-
-  const exportCsv = async () => {
-    const base = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '');
-    const response = await fetch(`${base}/reports/visits.csv`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `visits-report-${Date.now()}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   const kpis = useMemo(() => {
     const active = visits.filter((v) => v.status === 'checked_in');
@@ -66,140 +40,57 @@ export default function DashboardPage() {
     return { activeCount: active.length, completedTodayCount: completedToday.length, providerInside, avgMinutes, alerts };
   }, [visits]);
 
+  const lastVisits = useMemo(() => visits.slice(0, 8), [visits]);
+
   return (
-    <main className="dashboard-shell">
-      <aside className={`dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="brand">
-          <h2>Control de Visitas</h2>
-          <p>{user?.name}</p>
-        </div>
-        <nav>
-          <a href="#resumen" onClick={() => setIsSidebarOpen(false)}>Resumen</a>
-          <a href="#perfil" onClick={() => setIsSidebarOpen(false)}>Mi perfil</a>
-          <a href="#clientes" onClick={() => setIsSidebarOpen(false)}>Clientes</a>
-          <a href="#visitas" onClick={() => setIsSidebarOpen(false)}>Visitas</a>
-          {user?.role === 'admin' && <a href="#reportes" onClick={() => setIsSidebarOpen(false)}>Reportes y auditoría</a>}
-          {user?.role === 'admin' && <a href="#usuarios" onClick={() => setIsSidebarOpen(false)}>Usuarios</a>}
-        </nav>
-        <button onClick={logout}>Cerrar sesión</button>
-      </aside>
+    <AppShell title="Dashboard">
+      <section className="kpi-grid">
+        <article className="kpi-card"><h3>Activos en sitio</h3><strong>{kpis.activeCount}</strong></article>
+        <article className="kpi-card"><h3>Salidas hoy</h3><strong>{kpis.completedTodayCount}</strong></article>
+        <article className="kpi-card"><h3>Proveedores dentro</h3><strong>{kpis.providerInside}</strong></article>
+        <article className="kpi-card"><h3>Promedio min dentro</h3><strong>{kpis.avgMinutes}</strong></article>
+        <article className="kpi-card"><h3>Alertas +120 min</h3><strong>{kpis.alerts}</strong></article>
+      </section>
 
-      <section className="dashboard-layout">
-        <header>
-          <div>
-            <button
-              type="button"
-              className="menu-toggle"
-              onClick={() => setIsSidebarOpen((prev) => !prev)}
-              aria-label="Abrir menú"
-            >
-              ☰
-            </button>
-            <h1>Control de Visitas</h1>
-            <p>Sesión: {user?.name}</p>
-          </div>
-        </header>
-
-        <section id="resumen" className="kpi-grid">
-          <article className="kpi-card"><h3>Activos en sitio</h3><strong>{kpis.activeCount}</strong></article>
-          <article className="kpi-card"><h3>Salidas hoy</h3><strong>{kpis.completedTodayCount}</strong></article>
-          <article className="kpi-card"><h3>Proveedores dentro</h3><strong>{kpis.providerInside}</strong></article>
-          <article className="kpi-card"><h3>Promedio min dentro</h3><strong>{kpis.avgMinutes}</strong></article>
-          <article className="kpi-card"><h3>Alertas +120 min</h3><strong>{kpis.alerts}</strong></article>
+      <section className="grid-panels">
+        <section className="panel">
+          <h2>Resumen operativo</h2>
+          <p>Administra clientes y visitas desde la sección Operación.</p>
+          <Link to="/operations" className="link-btn">Ir a Operación</Link>
         </section>
 
-        {error && <p className="error-msg">{error}</p>}
+        <section className="panel">
+          <h2>Últimas visitas</h2>
+          <ul className="list">
+            {lastVisits.map((visit) => (
+              <li key={visit._id}>
+                <div>
+                  <strong>{visit.visitorName}</strong>
+                  <p>{visit.client?.companyName || 'Sin cliente'} • {visit.status}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        <div className="grid-panels">
-          <section id="perfil" className="panel-anchor">
-            <ProfilePanel
-              user={user}
-              onUpdateProfile={async (payload) => {
-                await request('/auth/me', { method: 'PUT', body: payload, token });
-                await refreshMe();
-              }}
-              onChangePassword={async (payload) => {
-                await request('/auth/me/password', { method: 'PUT', body: payload, token });
-              }}
-            />
+        {user?.role === 'admin' && (
+          <section className="panel">
+            <h2>Actividad reciente</h2>
+            <ul className="list">
+              {auditLogs.map((log) => (
+                <li key={log._id}>
+                  <div>
+                    <strong>{log.action}</strong>
+                    <p>{log.user?.email || 'sistema'} • {new Date(log.createdAt).toLocaleString()}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
-
-          <section id="clientes" className="panel-anchor">
-            <ClientsPanel
-              clients={clients}
-              onCreate={async (payload) => {
-                await request('/clients', { method: 'POST', body: payload, token });
-                await loadAll();
-              }}
-              onDelete={async (id) => {
-                await request(`/clients/${id}`, { method: 'DELETE', token });
-                await loadAll();
-              }}
-            />
-          </section>
-
-          <section id="visitas" className="panel-anchor">
-            <VisitsPanel
-              visits={visits}
-              clients={clients}
-              onCreate={async (payload) => {
-                await request('/visits', { method: 'POST', body: payload, token });
-                await loadAll();
-              }}
-              onCheckIn={async (id) => {
-                await request(`/visits/${id}/check-in`, { method: 'PUT', token });
-                await loadAll();
-              }}
-              onCheckOut={async (id) => {
-                await request(`/visits/${id}/check-out`, { method: 'PUT', token });
-                await loadAll();
-              }}
-              onDelete={async (id) => {
-                await request(`/visits/${id}`, { method: 'DELETE', token });
-                await loadAll();
-              }}
-            />
-          </section>
-
-          {user?.role === 'admin' && (
-            <section className="panel" id="reportes">
-              <h2>Reportes y auditoría</h2>
-              <button onClick={exportCsv}>Exportar CSV visitas</button>
-              <ul className="list">
-                {auditLogs.map((log) => (
-                  <li key={log._id}>
-                    <div>
-                      <strong>{log.action}</strong>
-                      <p>{log.user?.email || 'sistema'} • {new Date(log.createdAt).toLocaleString()}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {user?.role === 'admin' && (
-            <section id="usuarios" className="panel-anchor">
-              <UsersAdminPanel
-                users={users}
-                onCreate={async (payload) => {
-                  await request('/users', { method: 'POST', body: payload, token });
-                  await loadAll();
-                }}
-                onToggleActive={async (selectedUser) => {
-                  await request(`/users/${selectedUser.id}`, { method: 'PUT', body: { isActive: !selectedUser.isActive }, token });
-                  await loadAll();
-                }}
-                onResetPassword={async (id) => {
-                  await request(`/users/${id}/reset-password`, { method: 'PUT', body: { newPassword: 'Temp12345!' }, token });
-                  await loadAll();
-                }}
-              />
-            </section>
-          )}
-        </div>
+        )}
       </section>
-      {isSidebarOpen && <button className="sidebar-backdrop" aria-label="Cerrar menú" onClick={() => setIsSidebarOpen(false)} />}
-    </main>
+
+      {error && <p className="error-msg">{error}</p>}
+    </AppShell>
   );
 }
