@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { hasFeatureAccess } from '../utils/permissions';
 
 export default function AppShell({ title, children }) {
   const { user, logout } = useAuth();
@@ -15,10 +16,10 @@ export default function AppShell({ title, children }) {
         </div>
 
         <nav>
-          <NavLink to="/dashboard" onClick={() => setIsSidebarOpen(false)}>Dashboard</NavLink>
-          <NavLink to="/operations" onClick={() => setIsSidebarOpen(false)}>Operación</NavLink>
-          <NavLink to="/profile" onClick={() => setIsSidebarOpen(false)}>Mi perfil</NavLink>
-          {user?.role === 'admin' && <NavLink to="/admin/users" onClick={() => setIsSidebarOpen(false)}>Usuarios</NavLink>}
+          {hasFeatureAccess(user, 'dashboard') && <NavLink to="/dashboard" onClick={() => setIsSidebarOpen(false)}>Dashboard</NavLink>}
+          {hasFeatureAccess(user, 'operations') && <NavLink to="/operations" onClick={() => setIsSidebarOpen(false)}>Operación</NavLink>}
+          {hasFeatureAccess(user, 'profile') && <NavLink to="/profile" onClick={() => setIsSidebarOpen(false)}>Mi perfil</NavLink>}
+          {hasFeatureAccess(user, 'usersAdmin') && <NavLink to="/admin/users" onClick={() => setIsSidebarOpen(false)}>Usuarios</NavLink>}
         </nav>
 
         <button onClick={logout}>Cerrar sesión</button>

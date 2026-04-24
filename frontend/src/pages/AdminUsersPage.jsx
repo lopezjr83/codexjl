@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import UsersAdminPanel from '../components/UsersAdminPanel';
 import { request } from '../api/http';
 import { useAuth } from '../contexts/AuthContext';
+import { hasFeatureAccess } from '../utils/permissions';
 
 export default function AdminUsersPage() {
   const { token, user } = useAuth();
@@ -19,10 +20,10 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin') loadUsers();
-  }, [user?.role]);
+    if (hasFeatureAccess(user, 'usersAdmin')) loadUsers();
+  }, [user]);
 
-  if (user?.role !== 'admin') {
+  if (!hasFeatureAccess(user, 'usersAdmin')) {
     return (
       <AppShell title="Administración de usuarios">
         <section className="panel"><p>No tienes permisos para ver esta sección.</p></section>
@@ -45,6 +46,10 @@ export default function AdminUsersPage() {
         }}
         onResetPassword={async (id) => {
           await request(`/users/${id}/reset-password`, { method: 'PUT', body: { newPassword: 'Temp12345!' }, token });
+          await loadUsers();
+        }}
+        onUpdateAccess={async (id, access) => {
+          await request(`/users/${id}`, { method: 'PUT', body: access, token });
           await loadUsers();
         }}
       />

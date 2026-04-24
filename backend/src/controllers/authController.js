@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
-import { User } from '../models/User.js';
+import { User, getDefaultPermissions } from '../models/User.js';
 import { logAudit } from '../utils/audit.js';
 
 const signToken = (user) =>
@@ -14,6 +14,7 @@ const sanitizeUser = (user) => ({
   email: user.email,
   phone: user.phone,
   role: user.role,
+  permissions: getDefaultPermissions(user.role, user.permissions || {}),
   isActive: user.isActive
 });
 
@@ -21,7 +22,7 @@ export const register = async (req, res) => {
   const exists = await User.findOne({ email: req.body.email });
   if (exists) return res.status(409).json({ message: 'El correo ya existe' });
 
-  const user = await User.create(req.body);
+  const user = await User.create({ ...req.body, role: 'staff' });
   const token = signToken(user);
 
   res.status(201).json({ token, user: sanitizeUser(user) });
