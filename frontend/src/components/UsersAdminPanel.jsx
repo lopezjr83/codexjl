@@ -71,13 +71,13 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
 
       <ul className="list">
         {mappedUsers.map((user) => (
-          <li key={user.id}>
-            <div>
+          <li key={user.id} className="user-card-compact">
+            <div className="user-card-main">
               <strong>{user.name}</strong>
               <p>{user.email} · {user.role} · {user.isActive ? 'Activo' : 'Inactivo'}</p>
             </div>
 
-            <div style={{ display: 'grid', gap: '.5rem' }}>
+            <div className="user-card-actions">
               <button onClick={() => setSelectedUserId(user.id)}>Permisos</button>
               <button onClick={() => onToggleActive(user)}>{user.isActive ? 'Desactivar' : 'Activar'}</button>
               <button className="danger" onClick={() => onResetPassword(user.id)}>Reset pass</button>

@@ -103,6 +103,22 @@ button.danger { background: #bf1c44; }
   justify-content: space-between;
   align-items: center;
 }
+.user-card-compact {
+  padding: .45rem .7rem !important;
+  min-height: 76px;
+}
+.user-card-main strong { font-size: 1rem; }
+.user-card-main p { margin: .2rem 0 0; }
+.user-card-actions {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.user-card-actions button {
+  padding: .45rem .7rem;
+  min-width: 96px;
+}
 .access-editor {
   margin-top: .5rem;
   display: grid;
@@ -213,5 +229,10 @@ button.danger { background: #bf1c44; }
   }
   .grid-form {
     grid-template-columns: 1fr;
+  }
+  .user-card-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: .45rem;
   }
 }
