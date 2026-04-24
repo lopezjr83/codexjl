@@ -8,6 +8,7 @@ import { hasFeatureAccess } from '../utils/permissions';
 export default function AdminUsersPage() {
   const { token, user } = useAuth();
   const [users, setUsers] = useState([]);
+  const [visitTypes, setVisitTypes] = useState({});
   const [error, setError] = useState('');
 
   const loadUsers = async () => {
@@ -19,8 +20,16 @@ export default function AdminUsersPage() {
     }
   };
 
+  const loadVisitTypes = async () => {
+    const data = await request('/visit-types', { token });
+    setVisitTypes(data || {});
+  };
+
   useEffect(() => {
-    if (hasFeatureAccess(user, 'usersAdmin')) loadUsers();
+    if (hasFeatureAccess(user, 'usersAdmin')) {
+      loadUsers();
+      loadVisitTypes();
+    }
   }, [user]);
 
   if (!hasFeatureAccess(user, 'usersAdmin')) {
@@ -53,6 +62,31 @@ export default function AdminUsersPage() {
           await loadUsers();
         }}
       />
+      <section className="panel">
+        <h2>Configuración de tipos de visita</h2>
+        <form className="grid-form" onSubmit={async (e) => {
+          e.preventDefault();
+          await request('/visit-types', { method: 'PUT', body: visitTypes, token });
+          await loadVisitTypes();
+        }}>
+          {Object.keys(visitTypes).map((key) => (
+            <div key={key} className="panel">
+              <strong>{key}</strong>
+              <input
+                placeholder="Etiqueta"
+                value={visitTypes[key]?.label || ''}
+                onChange={(e) => setVisitTypes((prev) => ({ ...prev, [key]: { ...prev[key], label: e.target.value, key } }))}
+              />
+              <input
+                type="color"
+                value={visitTypes[key]?.color || '#3b82f6'}
+                onChange={(e) => setVisitTypes((prev) => ({ ...prev, [key]: { ...prev[key], color: e.target.value, key } }))}
+              />
+            </div>
+          ))}
+          <button type="submit">Guardar tipos</button>
+        </form>
+      </section>
     </AppShell>
   );
 }
