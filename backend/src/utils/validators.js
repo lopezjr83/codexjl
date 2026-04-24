@@ -64,8 +64,14 @@ export const clientSchema = Joi.object({
 });
 
 export const visitSchema = Joi.object({
-  client: Joi.string().required(),
+  client: Joi.string().optional(),
   category: Joi.string().valid('client', 'provider', 'visitor').optional(),
+  firstName: Joi.string().allow('', null).optional(),
+  lastName: Joi.string().allow('', null).optional(),
+  phone: Joi.string().allow('', null).optional(),
+  company: Joi.string().allow('', null).optional(),
+  hostPerson: Joi.string().allow('', null).optional(),
+  badgeNumber: Joi.number().integer().min(1).max(15).optional(),
   visitorName: Joi.string().required(),
   visitorDocument: Joi.string().required(),
   purpose: Joi.string().required(),
