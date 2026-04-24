@@ -18,23 +18,43 @@ export default function DashboardPage() {
   const [clients, setClients] = useState([]);
   const [visits, setVisits] = useState([]);
   const [users, setUsers] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [error, setError] = useState('');
 
   const loadAll = async () => {
     try {
       const requests = [request('/clients', { token }), request('/visits', { token })];
-      if (user?.role === 'admin') requests.push(request('/users', { token }));
+      if (user?.role === 'admin') {
+        requests.push(request('/users', { token }));
+        requests.push(request('/audit-logs?limit=30', { token }));
+      }
 
-      const [clientsData, visitsData, usersData] = await Promise.all(requests);
+      const [clientsData, visitsData, usersData, auditData] = await Promise.all(requests);
       setClients(clientsData);
       setVisits(visitsData);
       setUsers(usersData || []);
+      setAuditLogs(auditData || []);
     } catch (e) {
       setError(e.message);
     }
   };
 
   useEffect(() => { loadAll(); }, []);
+
+
+  const exportCsv = async () => {
+    const base = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '');
+    const response = await fetch(`${base}/reports/visits.csv`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `visits-report-${Date.now()}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const kpis = useMemo(() => {
     const active = visits.filter((v) => v.status === 'checked_in');
@@ -108,6 +128,24 @@ export default function DashboardPage() {
             await loadAll();
           }}
         />
+
+        {user?.role === 'admin' && (
+          <section className="panel">
+            <h2>Reportes y auditoría</h2>
+            <button onClick={exportCsv}>Exportar CSV visitas</button>
+            <ul className="list">
+              {auditLogs.map((log) => (
+                <li key={log._id}>
+                  <div>
+                    <strong>{log.action}</strong>
+                    <p>{log.user?.email || 'sistema'} • {new Date(log.createdAt).toLocaleString()}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {user?.role === 'admin' && (
           <UsersAdminPanel
             users={users}

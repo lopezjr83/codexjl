@@ -277,3 +277,7 @@ OWNER_SYNC_PASSWORD=false
 - Alertas de visitas con más de 120 minutos en sitio.
 - Filtros por estatus y categoría en el panel de visitas.
 - Indicadores operativos para clientes/proveedores/visitas activas.
+
+### Auditoría y reportes (solo admin)
+- `GET /api/audit-logs?limit=30`
+- `GET /api/reports/visits.csv`

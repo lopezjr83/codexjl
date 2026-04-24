@@ -1,4 +1,5 @@
 import { User } from '../models/User.js';
+import { logAudit } from '../utils/audit.js';
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -20,6 +21,7 @@ export const createUser = async (req, res) => {
   if (exists) return res.status(409).json({ message: 'El correo ya existe' });
 
   const user = await User.create(req.body);
+  await logAudit({ req, action: 'user.create', entityType: 'user', entityId: user._id, metadata: { role: user.role } });
   res.status(201).json(sanitizeUser(user));
 };
 
@@ -29,6 +31,7 @@ export const updateUser = async (req, res) => {
 
   const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
   if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+  await logAudit({ req, action: 'user.update', entityType: 'user', entityId: user._id });
   res.json(sanitizeUser(user));
 };
 
@@ -38,5 +41,6 @@ export const resetUserPassword = async (req, res) => {
 
   user.password = req.body.newPassword;
   await user.save();
+  await logAudit({ req, action: 'user.reset_password', entityType: 'user', entityId: user._id });
   res.json({ message: 'Contraseña restablecida' });
 };
