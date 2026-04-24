@@ -64,6 +64,7 @@ button.danger { background: #bf1c44; }
   border-radius: 8px;
 }
 .dashboard-sidebar nav a:hover { background: rgba(255,255,255,0.13); }
+.dashboard-sidebar nav a.active { background: rgba(255,255,255,0.2); }
 .dashboard-sidebar > button { margin-top: auto; }
 
 .dashboard-layout { overflow: auto; }
@@ -83,6 +84,8 @@ button.danger { background: #bf1c44; }
   gap: 1rem;
 }
 .panel-anchor { min-width: 0; }
+.two-cols { grid-template-columns: repeat(2, minmax(320px, 1fr)); }
+.one-col { grid-template-columns: minmax(280px, 760px); }
 .panel {
   background: white;
   border-radius: 14px;
@@ -115,6 +118,16 @@ button.danger { background: #bf1c44; }
 }
 .kpi-card h3 { margin: 0; font-size: .9rem; opacity: .8; }
 .kpi-card strong { font-size: 1.4rem; }
+.link-btn {
+  display: inline-block;
+  margin-top: .5rem;
+  text-decoration: none;
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  background: #3346ff;
+  color: #fff;
+  font-weight: 600;
+}
 
 .sidebar-backdrop {
   display: none;
@@ -154,6 +167,9 @@ button.danger { background: #bf1c44; }
     z-index: 20;
   }
   .grid-panels {
+    grid-template-columns: 1fr;
+  }
+  .two-cols, .one-col {
     grid-template-columns: 1fr;
   }
   .grid-form {
