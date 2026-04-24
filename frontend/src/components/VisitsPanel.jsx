@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const emptyVisit = { client: '', category: 'visitor', visitorName: '', visitorDocument: '', purpose: '', scheduledAt: '' };
 
@@ -9,8 +9,15 @@ const minutesInSite = (visit) => {
   return Math.max(0, Math.round((end - start) / 1000 / 60));
 };
 
-export default function VisitsPanel({ visits, clients, onCreate, onDelete }) {
+export default function VisitsPanel({ visits, clients, onCreate, onDelete, onCheckIn, onCheckOut }) {
   const [form, setForm] = useState(emptyVisit);
+  const [filters, setFilters] = useState({ status: 'all', category: 'all' });
+
+  const filteredVisits = useMemo(
+    () =>
+      visits.filter((visit) => (filters.status === 'all' || visit.status === filters.status) && (filters.category === 'all' || visit.category === filters.category)),
+    [visits, filters]
+  );
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -39,15 +46,36 @@ export default function VisitsPanel({ visits, clients, onCreate, onDelete }) {
         <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} required />
         <button type="submit">Programar visita</button>
       </form>
+
+      <div className="grid-form" style={{ marginTop: '.8rem' }}>
+        <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
+          <option value="all">Todos los estatus</option>
+          <option value="scheduled">Programada</option>
+          <option value="checked_in">Dentro</option>
+          <option value="completed">Finalizada</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+        <select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}>
+          <option value="all">Todas las categorías</option>
+          <option value="visitor">Visita</option>
+          <option value="client">Cliente</option>
+          <option value="provider">Proveedor</option>
+        </select>
+      </div>
+
       <ul className="list">
-        {visits.map((visit) => (
+        {filteredVisits.map((visit) => (
           <li key={visit._id}>
             <div>
               <strong>{visit.visitorName} ({visit.category})</strong>
               <p>{visit.client?.companyName} • {new Date(visit.scheduledAt).toLocaleString()}</p>
               <p>Estatus: {visit.status} • Tiempo en sitio: {minutesInSite(visit)} min • Salida: {visit.checkedOutAt ? new Date(visit.checkedOutAt).toLocaleTimeString() : '—'}</p>
             </div>
-            <button className="danger" onClick={() => onDelete(visit._id)}>Eliminar</button>
+            <div style={{ display: 'grid', gap: '.35rem' }}>
+              <button onClick={() => onCheckIn(visit._id)} disabled={visit.status === 'checked_in' || visit.status === 'completed'}>Check-in</button>
+              <button onClick={() => onCheckOut(visit._id)} disabled={visit.status === 'completed'}>Check-out</button>
+              <button className="danger" onClick={() => onDelete(visit._id)}>Eliminar</button>
+            </div>
           </li>
         ))}
       </ul>
