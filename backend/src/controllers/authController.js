@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { User } from '../models/User.js';
+import { logAudit } from '../utils/audit.js';
 
 const signToken = (user) =>
   jwt.sign({ sub: user._id, role: user.role }, env.jwtSecret, {
@@ -42,6 +43,7 @@ export const me = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true, runValidators: true }).select('-password');
+  await logAudit({ req, action: 'profile.update', entityType: 'user', entityId: user._id });
   res.json({ user: sanitizeUser(user) });
 };
 
@@ -52,5 +54,6 @@ export const changePassword = async (req, res) => {
 
   user.password = req.body.newPassword;
   await user.save();
+  await logAudit({ req, action: 'profile.change_password', entityType: 'user', entityId: user._id });
   res.json({ message: 'Contraseña actualizada correctamente' });
 };

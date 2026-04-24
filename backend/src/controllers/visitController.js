@@ -1,8 +1,10 @@
 import { Visit } from '../models/Visit.js';
+import { logAudit } from '../utils/audit.js';
 
 export const createVisit = async (req, res) => {
   const visit = await Visit.create({ ...req.body, createdBy: req.user._id });
   const populated = await visit.populate('client', 'companyName contactName');
+  await logAudit({ req, action: 'visit.create', entityType: 'visit', entityId: visit._id, metadata: { category: visit.category } });
   res.status(201).json(populated);
 };
 
@@ -31,6 +33,7 @@ export const checkInVisit = async (req, res) => {
   visit.status = 'checked_in';
   await visit.save();
   const populated = await visit.populate('client', 'companyName contactName');
+  await logAudit({ req, action: 'visit.checkin', entityType: 'visit', entityId: visit._id });
   res.json(populated);
 };
 
@@ -43,6 +46,7 @@ export const checkOutVisit = async (req, res) => {
   visit.status = 'completed';
   await visit.save();
   const populated = await visit.populate('client', 'companyName contactName');
+  await logAudit({ req, action: 'visit.checkout', entityType: 'visit', entityId: visit._id });
   res.json(populated);
 };
 
@@ -64,5 +68,6 @@ export const updateVisit = async (req, res) => {
 export const deleteVisit = async (req, res) => {
   const visit = await Visit.findByIdAndDelete(req.params.id);
   if (!visit) return res.status(404).json({ message: 'Visita no encontrada' });
+  await logAudit({ req, action: 'visit.delete', entityType: 'visit', entityId: visit._id });
   res.status(204).send();
 };
