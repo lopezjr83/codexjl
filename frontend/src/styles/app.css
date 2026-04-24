@@ -133,10 +133,21 @@ button.danger { background: #bf1c44; }
 }
 .active-visit-card {
   padding: .5rem .65rem !important;
-  min-height: 88px;
+  min-height: 120px;
+  align-items: flex-start !important;
 }
 .active-visit-card p {
-  margin: .2rem 0 0;
+  margin: .12rem 0 0;
+}
+.active-visit-body p span {
+  font-weight: 600;
+}
+.active-actions {
+  display: grid;
+  gap: .35rem;
+}
+.active-actions button {
+  min-width: 116px;
 }
 .user-card-compact {
   padding: .45rem .7rem !important;
