@@ -135,12 +135,29 @@ button.danger { background: #bf1c44; }
   padding: .5rem .65rem !important;
   min-height: 120px;
   align-items: flex-start !important;
+  color: #0f172a;
+  border: none !important;
 }
 .active-visit-card p {
   margin: .12rem 0 0;
 }
 .active-visit-body p span {
   font-weight: 600;
+}
+.visit-head {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-bottom: .3rem;
+}
+.visit-badge-number {
+  background: #fff;
+  border: 2px solid #1f2937;
+  border-radius: 8px;
+  min-width: 42px;
+  text-align: center;
+  padding: .1rem .35rem;
+  font-weight: 700;
 }
 .active-actions {
   display: grid;

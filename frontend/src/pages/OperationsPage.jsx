@@ -154,13 +154,17 @@ export default function OperationsPage() {
         </div>
         <ul className="list active-cards-grid" style={{ '--active-cols': String(Math.min(activeLimit, 4)) }}>
           {visibleActiveVisits.map((visit) => (
-            <li key={visit._id} className="active-visit-card">
-              <div className="active-visit-body" style={{ borderLeft: `8px solid ${visitTypes[visit.category]?.color || '#1f2937'}` }}>
-                <strong>{visit.visitorName}</strong>
-                <p><span>Tipo:</span> {typeLabel[visit.category] || visit.category}</p>
+            <li key={visit._id} className="active-visit-card" style={{ background: visitTypes[visit.category]?.color || '#1f2937' }}>
+              <div className="active-visit-body">
+                <div className="visit-head">
+                  <span className="visit-badge-number">{String(visit.badgeNumber || 0).padStart(2, '0')}</span>
+                  <div>
+                    <strong>{visit.visitorName}</strong>
+                    <p>{typeLabel[visit.category] || visit.category}</p>
+                  </div>
+                </div>
                 <p><span>A quien visita:</span> {visit.hostPerson || '—'}</p>
                 <p><span>Motivo:</span> {visit.purpose}</p>
-                {visit.badgeNumber && <p><span>Tarjeta:</span> {visit.badgeNumber}</p>}
                 {expandedActive[visit._id] && (
                   <p><span>Detalle:</span> DPI {visit.visitorDocument} · Entrada {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
                 )}
