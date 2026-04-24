@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
 import clientRoutes from './routes/clientRoutes.js';
 import visitRoutes from './routes/visitRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.get('/health', (req, res) => res.json({ ok: true, service: 'backend' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/visits', visitRoutes);
+app.use('/api/users', userRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

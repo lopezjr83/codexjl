@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const visitSchema = new mongoose.Schema(
   {
     client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    category: { type: String, enum: ['client', 'provider', 'visitor'], default: 'visitor' },
     visitorName: { type: String, required: true, trim: true },
     visitorDocument: { type: String, required: true, trim: true },
     purpose: { type: String, required: true, trim: true },

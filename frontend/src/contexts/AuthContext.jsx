@@ -10,19 +10,27 @@ export const AuthProvider = ({ children }) => {
     return raw ? JSON.parse(raw) : null;
   });
 
+  const persistSession = (session) => {
+    setToken(session.token);
+    setUser(session.user);
+    localStorage.setItem('token', session.token);
+    localStorage.setItem('user', JSON.stringify(session.user));
+  };
+
   const login = async (email, password) => {
     const data = await request('/auth/login', { method: 'POST', body: { email, password } });
-    setToken(data.token);
-    setUser(data.user);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    persistSession(data);
   };
 
   const register = async (payload) => {
     const data = await request('/auth/register', { method: 'POST', body: payload });
-    setToken(data.token);
+    persistSession(data);
+  };
+
+  const refreshMe = async () => {
+    if (!token) return;
+    const data = await request('/auth/me', { token });
     setUser(data.user);
-    localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
   };
 
@@ -33,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
-  const value = useMemo(() => ({ token, user, login, register, logout, isAuthenticated: Boolean(token) }), [token, user]);
+  const value = useMemo(() => ({ token, user, login, register, refreshMe, logout, isAuthenticated: Boolean(token) }), [token, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
