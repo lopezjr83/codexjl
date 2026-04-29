@@ -33,29 +33,67 @@ export default function DashboardPage() {
 
   const kpis = useMemo(() => {
     const active = visits.filter((v) => v.status === 'checked_in');
+    const checkedInToday = visits.filter((v) => v.checkedInAt && new Date(v.checkedInAt).toDateString() === new Date().toDateString());
     const completedToday = visits.filter((v) => v.checkedOutAt && new Date(v.checkedOutAt).toDateString() === new Date().toDateString());
+    const clientsInside = active.filter((v) => v.category === 'client').length;
     const providerInside = active.filter((v) => v.category === 'provider').length;
     const avgMinutes = active.length ? Math.round(active.reduce((acc, v) => acc + hoursInSite(v), 0) / active.length) : 0;
     const alerts = active.filter((v) => hoursInSite(v) >= 120).length;
-    return { activeCount: active.length, completedTodayCount: completedToday.length, providerInside, avgMinutes, alerts };
+    return {
+      activeCount: active.length,
+      checkedInTodayCount: checkedInToday.length,
+      completedTodayCount: completedToday.length,
+      clientsInside,
+      providerInside,
+      avgMinutes,
+      alerts
+    };
   }, [visits]);
 
   const lastVisits = useMemo(() => visits.slice(0, 8), [visits]);
+  const statusLabel = {
+    scheduled: 'Programada',
+    checked_in: 'En sitio',
+    completed: 'Finalizada',
+    cancelled: 'Cancelada'
+  };
+  const categoryLabel = {
+    visitor: 'Visita',
+    client: 'Cliente',
+    provider: 'Proveedor'
+  };
+  const actionLabel = {
+    'visit.create': 'Ingreso registrado',
+    'visit.checkin': 'Ingreso confirmado',
+    'visit.checkout': 'Salida registrada',
+    'visit.delete': 'Visita eliminada',
+    'user.create': 'Usuario creado',
+    'user.update': 'Usuario actualizado',
+    'user.reset_password': 'Contraseña restablecida',
+    'profile.update': 'Perfil actualizado',
+    'profile.change_password': 'Contraseña cambiada'
+  };
+  const operationalSummary = useMemo(() => {
+    if (!visits.length) return 'No hay movimientos recientes. Usa Operación para registrar el primer ingreso del día.';
+    if (kpis.activeCount === 0) return 'No hay personas en sitio en este momento. Todas las visitas activas ya fueron cerradas.';
+    if (kpis.alerts > 0) return `Hay ${kpis.alerts} visita(s) con más de 120 minutos en sitio. Revisa si requieren seguimiento.`;
+    return `Actualmente hay ${kpis.activeCount} persona(s) en sitio (${kpis.clientsInside} clientes y ${kpis.providerInside} proveedores).`;
+  }, [visits, kpis]);
 
   return (
     <AppShell title="Dashboard">
       <section className="kpi-grid">
-        <article className="kpi-card"><h3>Activos en sitio</h3><strong>{kpis.activeCount}</strong></article>
+        <article className="kpi-card"><h3>Personas en sitio</h3><strong>{kpis.activeCount}</strong></article>
+        <article className="kpi-card"><h3>Ingresos hoy</h3><strong>{kpis.checkedInTodayCount}</strong></article>
         <article className="kpi-card"><h3>Salidas hoy</h3><strong>{kpis.completedTodayCount}</strong></article>
-        <article className="kpi-card"><h3>Proveedores dentro</h3><strong>{kpis.providerInside}</strong></article>
-        <article className="kpi-card"><h3>Promedio min dentro</h3><strong>{kpis.avgMinutes}</strong></article>
-        <article className="kpi-card"><h3>Alertas +120 min</h3><strong>{kpis.alerts}</strong></article>
+        <article className="kpi-card"><h3>Tiempo promedio (min)</h3><strong>{kpis.avgMinutes}</strong></article>
+        <article className="kpi-card"><h3>Seguimiento (+120 min)</h3><strong>{kpis.alerts}</strong></article>
       </section>
 
       <section className="grid-panels">
         <section className="panel">
           <h2>Resumen operativo</h2>
-          <p>Administra clientes y visitas desde la sección Operación.</p>
+          <p>{operationalSummary}</p>
           <Link to="/operations" className="link-btn">Ir a Operación</Link>
         </section>
 
@@ -66,7 +104,8 @@ export default function DashboardPage() {
               <li key={visit._id}>
                 <div>
                   <strong>{visit.visitorName}</strong>
-                  <p>{visit.client?.companyName || 'Sin cliente'} • {visit.status}</p>
+                  <p>{categoryLabel[visit.category] || visit.category} • {statusLabel[visit.status] || visit.status}</p>
+                  <p>{new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
                 </div>
               </li>
             ))}
@@ -80,7 +119,7 @@ export default function DashboardPage() {
               {auditLogs.map((log) => (
                 <li key={log._id}>
                   <div>
-                    <strong>{log.action}</strong>
+                    <strong>{actionLabel[log.action] || log.action}</strong>
                     <p>{log.user?.email || 'sistema'} • {new Date(log.createdAt).toLocaleString()}</p>
                   </div>
                 </li>
