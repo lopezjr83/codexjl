@@ -83,7 +83,7 @@ export default function OperationsPage() {
       ...form,
       visitorName: `${form.firstName} ${form.lastName}`.trim(),
       badgeNumber: form.category === 'visitor' ? undefined : Number(form.badgeNumber),
-      phone: (form.category === 'client' || form.category === 'provider') ? form.phone : undefined,
+      phone: form.category === 'provider' ? form.phone : undefined,
       company: form.category === 'provider' ? form.company : undefined,
       scheduledAt: localNow.toISOString()
     };
@@ -131,7 +131,6 @@ export default function OperationsPage() {
 
             {form.category === 'client' && (
               <>
-                <input placeholder="Teléfono" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
                 <input type="number" min="1" max="15" placeholder="Tarjeta cliente (1-15)" value={form.badgeNumber} onChange={(e) => setForm({ ...form, badgeNumber: e.target.value })} required />
               </>
             )}
