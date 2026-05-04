@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const emptyClient = { companyName: '', contactName: '', email: '', phone: '', notes: '' };
+const emptyClient = { companyName: '', contactName: '', email: '', notes: '' };
 
 export default function ClientsPanel({ clients, onCreate, onDelete }) {
   const [form, setForm] = useState(emptyClient);
@@ -18,8 +18,7 @@ export default function ClientsPanel({ clients, onCreate, onDelete }) {
         <input placeholder="Empresa" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} required />
         <input placeholder="Contacto" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} required />
         <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input placeholder="Teléfono" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-        <input placeholder="Notas" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                <input placeholder="Notas" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         <button type="submit">Crear cliente</button>
       </form>
       <ul className="list">
