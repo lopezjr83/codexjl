@@ -4,7 +4,6 @@ import DpiCapture from '../components/DpiCapture';
 import { request } from '../api/http';
 import { useAuth } from '../contexts/AuthContext';
 
-
 const initialForm = {
   category: 'visitor',
   firstName: '',
@@ -30,6 +29,7 @@ export default function OperationsPage() {
   const [expandedActive, setExpandedActive] = useState({});
   const [visitTypes, setVisitTypes] = useState({});
   const [photoPreview, setPhotoPreview] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const loadVisits = async () => {
     try {
@@ -77,83 +77,208 @@ export default function OperationsPage() {
     return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
   };
 
+  const setCategory = (cat) => setForm({ ...initialForm, category: cat });
+
   const submit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...form,
-      visitorName: `${form.firstName} ${form.lastName}`.trim(),
-      badgeNumber: form.category === 'visitor' ? undefined : Number(form.badgeNumber),
-      phone: form.category === 'provider' ? form.phone : undefined,
-      company: form.category === 'provider' ? form.company : undefined,
-      scheduledAt: localNow.toISOString()
-    };
-    await request('/visits', { method: 'POST', body: payload, token });
-    setForm(initialForm);
-    setShowForm(false);
-    await loadVisits();
+    setSubmitting(true);
+    try {
+      const payload = {
+        ...form,
+        visitorName: `${form.firstName} ${form.lastName}`.trim(),
+        badgeNumber: form.category === 'visitor' ? undefined : Number(form.badgeNumber),
+        phone: form.category === 'provider' ? form.phone : undefined,
+        company: form.category === 'provider' ? form.company : undefined,
+        scheduledAt: localNow.toISOString()
+      };
+      await request('/visits', { method: 'POST', body: payload, token });
+      setForm(initialForm);
+      setShowForm(false);
+      await loadVisits();
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const CATEGORIES = [
+    { value: 'visitor', label: typeLabel.visitor },
+    { value: 'client', label: typeLabel.client },
+    { value: 'provider', label: typeLabel.provider }
+  ];
 
   return (
     <AppShell title="Operación">
-      <section className="panel">
+
+      {/* ── Header bar ─────────────────────────────────────────── */}
+      <section className="panel ops-header-panel">
         <div className="panel-head-inline">
           <div>
-            <h2>Registro unificado</h2>
-            <p>Visitas activas arriba, histórico de salidas abajo.</p>
+            <h2>Registro de visitas</h2>
+            <p>
+              {activeVisits.length > 0
+                ? `${activeVisits.length} visita${activeVisits.length !== 1 ? 's' : ''} activa${activeVisits.length !== 1 ? 's' : ''} en sitio`
+                : 'Sin visitas activas en este momento'}
+            </p>
           </div>
-          <button onClick={() => setShowForm((prev) => !prev)}>
-            {showForm ? 'Cerrar registro' : 'Nuevo registro'}
+          <button
+            className={showForm ? 'ghost' : ''}
+            onClick={() => { setShowForm((prev) => !prev); if (!showForm) setForm(initialForm); }}
+          >
+            {showForm ? '✕ Cerrar formulario' : '+ Nuevo ingreso'}
           </button>
         </div>
       </section>
 
       {error && <p className="error-msg">{error}</p>}
 
+      {/* ── Registration form ──────────────────────────────────── */}
       {showForm && (
-        <section className="panel">
-          <h3>Nuevo ingreso</h3>
-          <form className="grid-form" onSubmit={submit}>
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              style={{ gridColumn: '1 / -1' }}
-            >
-              <option value="visitor">Visita</option>
-              <option value="client">Cliente</option>
-              <option value="provider">Proveedor</option>
-            </select>
+        <section className="panel reg-form-panel">
+          <div className="reg-form-layout">
 
-            <input placeholder="Nombre" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
-            <input placeholder="Apellido" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
-            <input placeholder="No. DPI" value={form.visitorDocument} onChange={(e) => setForm({ ...form, visitorDocument: e.target.value })} required />
-            <input placeholder="Motivo de visita" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required />
-            <input placeholder="Persona a quien visita" value={form.hostPerson} onChange={(e) => setForm({ ...form, hostPerson: e.target.value })} required style={{ gridColumn: '1 / -1' }} />
+            {/* Left: form fields */}
+            <form className="reg-form" onSubmit={submit}>
 
-            {form.category === 'client' && (
-              <>
-                <input type="number" min="1" max="15" placeholder="Tarjeta cliente (1-15)" value={form.badgeNumber} onChange={(e) => setForm({ ...form, badgeNumber: e.target.value })} required />
-              </>
-            )}
-            {form.category === 'provider' && (
-              <>
-                <input placeholder="Empresa" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} required />
-                <input placeholder="Teléfono" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-                <input type="number" min="1" max="15" placeholder="Tarjeta proveedor (1-15)" value={form.badgeNumber} onChange={(e) => setForm({ ...form, badgeNumber: e.target.value })} required />
-              </>
-            )}
+              {/* Category selector */}
+              <div className="form-field-group">
+                <span className="form-group-label">Tipo de visita</span>
+                <div className="category-tabs">
+                  {CATEGORIES.map(({ value, label }) => (
+                    <button
+                      type="button"
+                      key={value}
+                      className={`category-tab${form.category === value ? ' active' : ''}`}
+                      style={form.category === value ? {
+                        background: visitTypes[value]?.color || 'var(--c-primary)',
+                        borderColor: visitTypes[value]?.color || 'var(--c-primary)',
+                        color: '#fff'
+                      } : {}}
+                      onClick={() => setCategory(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <input value={localNow.toLocaleString()} readOnly style={{ gridColumn: '1 / -1' }} />
+              {/* Personal info */}
+              <div className="form-field-group">
+                <span className="form-group-label">Datos personales</span>
+                <div className="form-row">
+                  <input
+                    placeholder="Nombre"
+                    value={form.firstName}
+                    onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                    autoFocus
+                    required
+                  />
+                  <input
+                    placeholder="Apellido"
+                    value={form.lastName}
+                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                    required
+                  />
+                </div>
+                <input
+                  placeholder="Número de DPI"
+                  value={form.visitorDocument}
+                  onChange={(e) => setForm({ ...form, visitorDocument: e.target.value })}
+                  required
+                />
+              </div>
 
-            <DpiCapture
-              value={form.dpiPhoto}
-              onChange={(photo) => setForm({ ...form, dpiPhoto: photo })}
-            />
+              {/* Visit details */}
+              <div className="form-field-group">
+                <span className="form-group-label">Detalles de la visita</span>
+                <input
+                  placeholder="Motivo de visita"
+                  value={form.purpose}
+                  onChange={(e) => setForm({ ...form, purpose: e.target.value })}
+                  required
+                />
+                <input
+                  placeholder="Persona a quien visita"
+                  value={form.hostPerson}
+                  onChange={(e) => setForm({ ...form, hostPerson: e.target.value })}
+                  required
+                />
+              </div>
 
-            <button type="submit">Registrar entrada</button>
-          </form>
+              {/* Category-specific fields */}
+              {form.category === 'client' && (
+                <div className="form-field-group">
+                  <span className="form-group-label">Datos de cliente</span>
+                  <input
+                    type="number"
+                    min="1" max="15"
+                    placeholder="Número de tarjeta (1–15)"
+                    value={form.badgeNumber}
+                    onChange={(e) => setForm({ ...form, badgeNumber: e.target.value })}
+                    required
+                  />
+                </div>
+              )}
+              {form.category === 'provider' && (
+                <div className="form-field-group">
+                  <span className="form-group-label">Datos de proveedor</span>
+                  <div className="form-row">
+                    <input
+                      placeholder="Empresa"
+                      value={form.company}
+                      onChange={(e) => setForm({ ...form, company: e.target.value })}
+                      required
+                    />
+                    <input
+                      placeholder="Teléfono (opcional)"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    />
+                  </div>
+                  <input
+                    type="number"
+                    min="1" max="15"
+                    placeholder="Número de tarjeta (1–15)"
+                    value={form.badgeNumber}
+                    onChange={(e) => setForm({ ...form, badgeNumber: e.target.value })}
+                    required
+                  />
+                </div>
+              )}
+
+              <button type="submit" className="reg-submit-btn" disabled={submitting}>
+                {submitting ? 'Registrando…' : 'Registrar entrada'}
+              </button>
+            </form>
+
+            {/* Right: clock + photo */}
+            <div className="reg-form-aside">
+              <div className="form-clock">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <div>
+                  <span className="form-clock-time">
+                    {localNow.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
+                  <span className="form-clock-date">
+                    {localNow.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="form-field-group">
+                <span className="form-group-label">Foto del DPI</span>
+                <DpiCapture
+                  value={form.dpiPhoto}
+                  onChange={(photo) => setForm({ ...form, dpiPhoto: photo })}
+                />
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
+      {/* ── Active visits ──────────────────────────────────────── */}
       <section className="panel">
         <div className="panel-head-inline">
           <h3>Visitas activas</h3>
@@ -176,49 +301,54 @@ export default function OperationsPage() {
           {visibleActiveVisits.map((visit) => {
             const cardColor = visitTypes[visit.category]?.color || '#1f2937';
             return (
-            <li key={visit._id} className="active-visit-card" style={{ backgroundColor: cardColor }}>
-              <div className="active-visit-body">
-                <div className="visit-head">
-                  <span className="visit-badge-number">{String(visit.badgeNumber || 0).padStart(2, '0')}</span>
-                  <div style={{ flex: 1 }}>
-                    <strong>{visit.visitorName}</strong>
-                    <span className="visit-type-label">{typeLabel[visit.category] || visit.category}</span>
+              <li key={visit._id} className="active-visit-card" style={{ backgroundColor: cardColor }}>
+                <div className="active-visit-body">
+                  <div className="visit-head">
+                    <span className="visit-badge-number">{String(visit.badgeNumber || 0).padStart(2, '0')}</span>
+                    <div style={{ flex: 1 }}>
+                      <strong>{visit.visitorName}</strong>
+                      <span className="visit-type-label">{typeLabel[visit.category] || visit.category}</span>
+                    </div>
+                    {visit.dpiPhoto && (
+                      <img
+                        src={visit.dpiPhoto}
+                        alt="DPI"
+                        className="dpi-thumb-card"
+                        onClick={() => setPhotoPreview(visit.dpiPhoto)}
+                      />
+                    )}
                   </div>
-                  {visit.dpiPhoto && (
-                    <img
-                      src={visit.dpiPhoto}
-                      alt="DPI"
-                      className="dpi-thumb-card"
-                      onClick={() => setPhotoPreview(visit.dpiPhoto)}
-                    />
+                  <p><span>A quien visita:</span> {visit.hostPerson || '—'}</p>
+                  <p><span>Motivo:</span> {visit.purpose}</p>
+                  {expandedActive[visit._id] && (
+                    <p><span>DPI:</span> {visit.visitorDocument} · Entrada: {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   )}
                 </div>
-                <p><span>A quien visita:</span> {visit.hostPerson || '—'}</p>
-                <p><span>Motivo:</span> {visit.purpose}</p>
-                {expandedActive[visit._id] && (
-                  <p><span>DPI:</span> {visit.visitorDocument} · Entrada {new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</p>
-                )}
-              </div>
-              <div className="user-card-actions active-actions">
-                <button onClick={() => setExpandedActive((prev) => ({ ...prev, [visit._id]: !prev[visit._id] }))}>
-                  {expandedActive[visit._id] ? 'Ocultar' : 'Ver detalles'}
-                </button>
-                <button
-                  onClick={async () => {
-                    await request(`/visits/${visit._id}/check-out`, { method: 'PUT', token });
-                    await loadVisits();
-                  }}
-                  disabled={visit.status === 'completed'}
-                >
-                  Dar salida
-                </button>
-              </div>
-            </li>
+                <div className="active-card-actions">
+                  <button
+                    className="details-btn"
+                    onClick={() => setExpandedActive((prev) => ({ ...prev, [visit._id]: !prev[visit._id] }))}
+                  >
+                    {expandedActive[visit._id] ? 'Ocultar' : 'Ver más'}
+                  </button>
+                  <button
+                    className="checkout-btn"
+                    onClick={async () => {
+                      await request(`/visits/${visit._id}/check-out`, { method: 'PUT', token });
+                      await loadVisits();
+                    }}
+                    disabled={visit.status === 'completed'}
+                  >
+                    Dar salida
+                  </button>
+                </div>
+              </li>
             );
           })}
         </ul>
       </section>
 
+      {/* ── History ────────────────────────────────────────────── */}
       <section className="panel">
         <h3>Histórico de salidas</h3>
         <div className="history-filters">
