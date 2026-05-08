@@ -13,30 +13,44 @@ export const exportVisitsCsv = async (req, res) => {
     .sort({ createdAt: -1 });
 
   const header = [
-    'id',
-    'category',
-    'visitorName',
-    'visitorDocument',
-    'status',
-    'scheduledAt',
-    'checkedInAt',
-    'checkedOutAt',
-    'clientCompany',
-    'createdBy'
+    'Fecha entrada',
+    'Fecha salida',
+    'Duracion (min)',
+    'Categoria',
+    'Nombre',
+    'DPI',
+    'A quien visita',
+    'Motivo',
+    'Empresa',
+    'Telefono',
+    'No. Tarjeta',
+    'Estado',
+    'Registrado por'
   ];
 
-  const rows = visits.map((visit) => [
-    visit._id,
-    visit.category,
-    visit.visitorName,
-    visit.visitorDocument,
-    visit.status,
-    visit.scheduledAt?.toISOString(),
-    visit.checkedInAt?.toISOString(),
-    visit.checkedOutAt?.toISOString(),
-    visit.client?.companyName,
-    visit.createdBy?.email
-  ]);
+  const rows = visits.map((visit) => {
+    const inAt  = visit.checkedInAt  || visit.scheduledAt;
+    const outAt = visit.checkedOutAt;
+    const durationMin = inAt && outAt
+      ? Math.max(0, Math.round((new Date(outAt) - new Date(inAt)) / 60000))
+      : '';
+    const catMap = { visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' };
+    return [
+      inAt  ? new Date(inAt).toLocaleString('es-GT')  : '',
+      outAt ? new Date(outAt).toLocaleString('es-GT') : '',
+      durationMin,
+      catMap[visit.category] || visit.category,
+      visit.visitorName,
+      visit.visitorDocument,
+      visit.hostPerson || '',
+      visit.purpose,
+      visit.company || '',
+      visit.phone   || '',
+      visit.badgeNumber || '',
+      visit.status,
+      visit.createdBy?.email || ''
+    ];
+  });
 
   const csv = [header, ...rows].map((row) => row.map(csvEscape).join(',')).join('\n');
 

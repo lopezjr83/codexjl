@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import OperationsPage from './pages/OperationsPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import ReportsPage from './pages/ReportsPage';
 import { hasFeatureAccess } from './utils/permissions';
 
 const PrivateRoute = ({ children }) => {
@@ -62,6 +63,16 @@ export default function App() {
           <PrivateRoute>
             <FeatureRoute feature="usersAdmin">
               <AdminUsersPage />
+            </FeatureRoute>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <PrivateRoute>
+            <FeatureRoute feature="reports">
+              <ReportsPage />
             </FeatureRoute>
           </PrivateRoute>
         }

@@ -562,6 +562,42 @@ button.success:hover { background: #166534 !important; }
   margin-bottom: .75rem;
 }
 
+/* ─── Reports page ───────────────────────────────────────────── */
+.rpt-kpi-strip {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+.rpt-kpi {
+  flex: 1;
+  min-width: 110px;
+  background: var(--c-surface);
+  border-radius: var(--r-md);
+  padding: .85rem 1rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,.04);
+  border-top: 3px solid var(--rk, var(--c-primary));
+}
+.rpt-kpi span { display: block; font-size: 1.55rem; font-weight: 700; color: var(--c-navy); line-height: 1; }
+.rpt-kpi p { margin: .3rem 0 0; font-size: .75rem; color: var(--c-muted); font-weight: 500; }
+.rpt-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: .5rem;
+  margin-bottom: .85rem;
+}
+.rpt-table th { white-space: nowrap; }
+.th-sortable { cursor: pointer; user-select: none; }
+.th-sortable:hover { background: #f0f3ff; }
+.sort-icon { margin-left: .25rem; font-size: .8rem; color: var(--c-primary); }
+.sort-icon-inactive { color: var(--c-muted); opacity: .4; }
+.rpt-count {
+  margin: .75rem 0 0;
+  font-size: .82rem;
+  color: var(--c-muted);
+  text-align: right;
+}
+
 /* ─── Error / badges ─────────────────────────────────────────── */
 .error-msg { color: #b00020; font-size: .88rem; margin: .4rem 0; }
 .badge {
