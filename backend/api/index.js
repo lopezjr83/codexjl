@@ -3,6 +3,14 @@ import app from '../src/app.js';
 import { env } from '../src/config/env.js';
 import { ensureOwnerUser } from '../src/bootstrap/ensureOwnerUser.js';
 
+// Disable Vercel's automatic body parser so Express handles it with the 5mb limit
+export const config = {
+  api: {
+    bodyParser: false,
+    responseLimit: false
+  }
+};
+
 const globalForMongoose = globalThis;
 
 if (!globalForMongoose._mongooseCache) {
