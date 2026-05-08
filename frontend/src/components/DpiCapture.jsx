@@ -5,13 +5,13 @@ const compressImage = (file) => new Promise((resolve) => {
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
-      const maxW = 800;
+      const maxW = 700;
       const ratio = Math.min(1, maxW / img.width);
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(img.width * ratio);
       canvas.height = Math.round(img.height * ratio);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.72));
+      resolve(canvas.toDataURL('image/jpeg', 0.65));
     };
     img.src = e.target.result;
   };
