@@ -30,6 +30,7 @@ export default function OperationsPage() {
   const [visitTypes, setVisitTypes] = useState({});
   const [photoPreview, setPhotoPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState(null);
 
   const loadVisits = async () => {
     try {
@@ -374,7 +375,7 @@ export default function OperationsPage() {
           </div>
         ) : (
           <div className="table-wrap">
-            <table className="history-table">
+            <table className="history-table history-table-clickable">
               <thead>
                 <tr>
                   <th>Foto</th>
@@ -385,24 +386,30 @@ export default function OperationsPage() {
                   <th>Entrada</th>
                   <th>Salida</th>
                   <th>Duración</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredHistoryVisits.map((visit) => (
-                  <tr key={visit._id}>
-                    <td>
+                  <tr key={visit._id} onClick={() => setSelectedVisit(visit)} className="history-row-clickable">
+                    <td onClick={(e) => e.stopPropagation()}>
                       {visit.dpiPhoto
                         ? <img src={visit.dpiPhoto} alt="DPI" className="dpi-thumb-table" onClick={() => setPhotoPreview(visit.dpiPhoto)} />
                         : <span className="dpi-no-photo">—</span>
                       }
                     </td>
-                    <td>{visit.visitorName}</td>
+                    <td><strong>{visit.visitorName}</strong></td>
                     <td>{typeLabel[visit.category] || visit.category}</td>
                     <td>{visit.hostPerson || '—'}</td>
                     <td>{visit.purpose}</td>
                     <td>{new Date(visit.checkedInAt || visit.scheduledAt).toLocaleString()}</td>
                     <td>{visit.checkedOutAt ? new Date(visit.checkedOutAt).toLocaleString() : '—'}</td>
                     <td>{formatDuration(visit)}</td>
+                    <td className="row-detail-hint">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -410,6 +417,119 @@ export default function OperationsPage() {
           </div>
         )}
       </section>
+
+      {/* ── Visit detail modal ─────────────────────────────────── */}
+      {selectedVisit && (
+        <div className="modal-backdrop" onClick={() => setSelectedVisit(null)}>
+          <div className="visit-detail-modal" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="vd-header" style={{ borderColor: visitTypes[selectedVisit.category]?.color || 'var(--c-primary)' }}>
+              <div className="vd-header-info">
+                {selectedVisit.badgeNumber > 0 && (
+                  <span className="vd-badge-num" style={{ background: visitTypes[selectedVisit.category]?.color || 'var(--c-primary)' }}>
+                    #{String(selectedVisit.badgeNumber).padStart(2, '0')}
+                  </span>
+                )}
+                <div>
+                  <h2 className="vd-name">{selectedVisit.visitorName}</h2>
+                  <span className="vd-category" style={{ background: visitTypes[selectedVisit.category]?.color || 'var(--c-primary)' }}>
+                    {typeLabel[selectedVisit.category] || selectedVisit.category}
+                  </span>
+                </div>
+              </div>
+              <button className="vd-close" onClick={() => setSelectedVisit(null)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="vd-body">
+
+              {/* Photo */}
+              {selectedVisit.dpiPhoto && (
+                <div className="vd-photo-wrap">
+                  <img
+                    src={selectedVisit.dpiPhoto}
+                    alt="Foto DPI"
+                    className="vd-photo"
+                    onClick={() => setPhotoPreview(selectedVisit.dpiPhoto)}
+                    title="Clic para ampliar"
+                  />
+                  <span className="vd-photo-label">Foto del DPI</span>
+                </div>
+              )}
+
+              {/* Fields grid */}
+              <div className="vd-fields">
+
+                <div className="vd-section-label">Identificación</div>
+                <div className="vd-field-row">
+                  <div className="vd-field">
+                    <span className="vd-fl">No. DPI</span>
+                    <span className="vd-fv">{selectedVisit.visitorDocument || '—'}</span>
+                  </div>
+                  {selectedVisit.company && (
+                    <div className="vd-field">
+                      <span className="vd-fl">Empresa</span>
+                      <span className="vd-fv">{selectedVisit.company}</span>
+                    </div>
+                  )}
+                  {selectedVisit.phone && (
+                    <div className="vd-field">
+                      <span className="vd-fl">Teléfono</span>
+                      <span className="vd-fv">{selectedVisit.phone}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="vd-section-label">Detalles de la visita</div>
+                <div className="vd-field-row">
+                  <div className="vd-field">
+                    <span className="vd-fl">A quien visita</span>
+                    <span className="vd-fv">{selectedVisit.hostPerson || '—'}</span>
+                  </div>
+                  <div className="vd-field">
+                    <span className="vd-fl">Motivo</span>
+                    <span className="vd-fv">{selectedVisit.purpose}</span>
+                  </div>
+                </div>
+
+                <div className="vd-section-label">Tiempos</div>
+                <div className="vd-field-row">
+                  <div className="vd-field">
+                    <span className="vd-fl">Entrada</span>
+                    <span className="vd-fv">
+                      {selectedVisit.checkedInAt
+                        ? new Date(selectedVisit.checkedInAt).toLocaleString()
+                        : new Date(selectedVisit.scheduledAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="vd-field">
+                    <span className="vd-fl">Salida</span>
+                    <span className="vd-fv">
+                      {selectedVisit.checkedOutAt
+                        ? new Date(selectedVisit.checkedOutAt).toLocaleString()
+                        : '—'}
+                    </span>
+                  </div>
+                  <div className="vd-field">
+                    <span className="vd-fl">Duración</span>
+                    <span className="vd-fv vd-fv-highlight">{formatDuration(selectedVisit)}</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="vd-footer">
+              <button className="ghost" onClick={() => setSelectedVisit(null)}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {photoPreview && (
         <div className="modal-backdrop" onClick={() => setPhotoPreview('')}>
