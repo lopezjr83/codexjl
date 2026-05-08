@@ -1,10 +1,38 @@
 import { Visit } from '../models/Visit.js';
 import { logAudit } from '../utils/audit.js';
+import { uploadToDrive } from '../utils/driveUpload.js';
+
+const CAT_LABEL = { visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' };
+
+const buildDriveFileName = (body, now) => {
+  const cat    = CAT_LABEL[body.category] || body.category || 'Visita';
+  const badge  = String(body.badgeNumber || '00').padStart(2, '0');
+  const name   = (body.visitorName || 'Sin_nombre').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ]/g, '');
+  const date   = now.toISOString().slice(0, 10);
+  const time   = now.toTimeString().slice(0, 5).replace(':', '-');
+  return `${cat}_${badge}_${name}_${date}_${time}.jpg`;
+};
 
 export const createVisit = async (req, res) => {
   const now = new Date();
+  const body = req.body;
+
+  // Upload DPI photo to Google Drive if present
+  let dpiPhoto = body.dpiPhoto || '';
+  if (dpiPhoto && process.env.GOOGLE_DRIVE_FOLDER_ID) {
+    try {
+      const fileName = buildDriveFileName(body, now);
+      const driveUrl = await uploadToDrive(dpiPhoto, fileName);
+      if (driveUrl) dpiPhoto = driveUrl;
+    } catch (err) {
+      console.error('Drive upload failed, storing base64 as fallback:', err.message);
+      // Keep original base64 as fallback if Drive upload fails
+    }
+  }
+
   const payload = {
-    ...req.body,
+    ...body,
+    dpiPhoto,
     status: 'checked_in',
     scheduledAt: now,
     checkedInAt: now,

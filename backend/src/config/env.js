@@ -20,5 +20,7 @@ export const env = {
   corsOriginSuffixList: (process.env.CORS_ORIGIN_SUFFIXES || '.vercel.app').split(',').map((item) => item.trim()).filter(Boolean),
   ownerAutocreate: process.env.OWNER_AUTOCREATE !== 'false',
   ownerSyncPassword: process.env.OWNER_SYNC_PASSWORD !== 'false',
-  ownerPassword: process.env.OWNER_PASSWORD || null
+  ownerPassword: process.env.OWNER_PASSWORD || null,
+  googleDriveFolderId: process.env.GOOGLE_DRIVE_FOLDER_ID || null,
+  googleServiceAccountJson: process.env.GOOGLE_SERVICE_ACCOUNT_JSON || null
 };
