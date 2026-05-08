@@ -1,70 +1,89 @@
-# Sistema de Control de Visitas y Clientes
+# Sistema de Control de Visitas — Control de Visitas SPADD
 
-Aplicación web full-stack para gestionar usuarios, clientes y visitas de una empresa.
+Aplicación web full-stack para gestionar visitantes, clientes y proveedores en instalaciones empresariales.
 
-## Arquitectura
+## Stack tecnológico
 
-- **Frontend:** React + Vite.
-- **Backend:** Node.js + Express.
-- **Base de datos:** MongoDB (Mongoose).
-- **Autenticación:** JWT (Bearer token).
-- **Seguridad API:** Helmet, rate limit, sanitización de payload y validación con Joi.
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React 18 + Vite 5 (SPA) |
+| Backend | Node.js 20 + Express 4 |
+| Base de datos | MongoDB + Mongoose |
+| Autenticación | JWT (Bearer token) |
+| Almacenamiento de fotos | Google Drive (Service Account) |
+| Despliegue | Vercel (frontend + backend serverless) |
+| Seguridad | Helmet, rate-limit, mongo-sanitize, Joi |
 
-### Módulos principales
+---
 
-1. **Auth**
-   - Registro de usuario.
-   - Login.
-   - Consulta de perfil actual (`/api/auth/me`).
-2. **Clientes (CRUD)**
-   - Crear, listar, obtener por id, actualizar y eliminar.
-3. **Visitas (CRUD)**
-   - Crear, listar, obtener por id, actualizar y eliminar.
-   - Relación con cliente y usuario que registró la visita.
+## Funcionalidades
 
-## Ejecución local (desarrollo)
+### Operación diaria
+- Registro de entradas: Visita / Cliente / Proveedor
+- Captura de foto del DPI al registrar (comprimida y subida a Google Drive)
+- Tarjetas de visitas activas en tiempo real con badge de tarjeta
+- Dar salida con un click desde las tarjetas activas
+- Modal de detalle al hacer click en el histórico
+- Filtros en el histórico: búsqueda, categoría, rango de fechas
 
-### Requisitos
+### Dashboard operativo
+- Monitoreo en vivo: tabla de personas actualmente en sitio
+- Alerta visual para visitas con más de 120 minutos en sitio
+- KPIs: visitas activas, salidas del día, proveedores dentro, tiempo promedio
+- Resumen diario por categoría
+- Últimas 8 salidas del día
 
-- Node.js 20+
-- npm 10+
-- MongoDB local o en contenedor
+### Reportes (solo admin)
+- 7 KPIs calculados sobre el conjunto filtrado
+- Filtros: búsqueda de texto, categoría, estatus, rango de fechas
+- Tabla ordenable por cualquier columna
+- Exportación a CSV con todos los campos
 
-### 1) Backend
+### Administración
+- Gestión de usuarios (crear, editar, activar/desactivar, resetear contraseña)
+- Configuración de tipos de visita (etiqueta y color por categoría)
+- Sistema de permisos por módulo (dashboard, operación, reportes, usuarios)
+- Logs de auditoría por acción
 
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run dev
+### Perfil de usuario
+- Edición de nombre, email y teléfono
+- Cambio de contraseña con validación de contraseña actual
+
+---
+
+## Arquitectura del proyecto
+
+```
+codexjl/
+├── frontend/              # React SPA
+│   ├── src/
+│   │   ├── pages/         # Dashboard, Operations, Reports, Profile, Admin
+│   │   ├── components/    # AppShell, DpiCapture, Panels de admin/perfil
+│   │   ├── api/           # http.js (fetch wrapper con auth)
+│   │   ├── contexts/      # AuthContext
+│   │   └── styles/        # app.css (design system con variables CSS)
+│   └── vercel.json        # Rewrite rules para SPA
+│
+└── backend/               # Express serverless
+    ├── api/
+    │   └── index.js       # Entry point para Vercel (bodyParser: false)
+    ├── src/
+    │   ├── controllers/   # visit, client, user, auth, report, audit
+    │   ├── models/        # Visit, Client, User, AuditLog, VisitTypeConfig
+    │   ├── routes/        # Express routers
+    │   ├── middleware/     # auth, validate, asyncHandler, error
+    │   ├── utils/         # audit.js, validators.js, driveUpload.js
+    │   ├── config/        # env.js
+    │   └── bootstrap/     # ensureOwnerUser.js
+    ├── vercel.json        # Catch-all route → api/index.js
+    └── .env.example
 ```
 
-Por defecto queda en `http://localhost:4000`.
-
-### 2) Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Por defecto queda en `http://localhost:5173`.
-
-## Ejecución con Docker (estilo producción)
-
-```bash
-docker compose up --build
-```
-
-Servicios:
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:4000`
-- MongoDB: `mongodb://localhost:27017`
+---
 
 ## Variables de entorno
 
-Backend (`backend/.env`):
+### Backend (`backend/.env`)
 
 ```env
 NODE_ENV=development
@@ -72,216 +91,178 @@ PORT=4000
 MONGO_URI=mongodb://localhost:27017/visits_control
 JWT_SECRET=change_me_super_secure
 JWT_EXPIRES_IN=1d
-CORS_ORIGIN=http://localhost:5173
-CORS_ORIGIN_SUFFIXES=.vercel.app
-```
-
-## Endpoints API
-
-### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-
-### Clients
-- `GET /api/clients`
-- `POST /api/clients`
-- `GET /api/clients/:id`
-- `PUT /api/clients/:id`
-- `DELETE /api/clients/:id`
-
-### Visits
-- `GET /api/visits`
-- `POST /api/visits`
-- `GET /api/visits/:id`
-- `PUT /api/visits/:id`
-- `DELETE /api/visits/:id`
-
-## Recomendaciones para producción
-
-- Configurar secretos fuertes para JWT.
-- Configurar HTTPS y reverse proxy (Nginx / Traefik).
-- Añadir observabilidad (logs centralizados + métricas).
-- Añadir tests automatizados (unitarios e integración).
-- Implementar control de roles más granular.
-
-## Subir a GitHub y lanzar la app
-
-Sí, se puede subir a GitHub y desplegarla fácilmente.
-
-### 1) Subir a GitHub
-
-```bash
-git remote add origin https://github.com/TU_USUARIO/TU_REPO.git
-git branch -M main
-git push -u origin main
-```
-
-### 2) CI automática (GitHub Actions)
-
-Se añadió un workflow en `.github/workflows/ci.yml` que:
-- instala dependencias de backend y frontend,
-- valida sintaxis del backend,
-- compila frontend.
-
-Esto se ejecuta automáticamente en cada push/PR.
-
-### 3) Despliegue recomendado (Render + MongoDB Atlas)
-
-1. Crear clúster en **MongoDB Atlas** y copiar URI.
-2. En **Render**, crear servicio **Web Service** para `backend/` usando Docker.
-3. Configurar variables:
-   - `NODE_ENV=production`
-   - `PORT=4000`
-   - `MONGO_URI=<uri atlas>`
-   - `JWT_SECRET=<secreto largo>`
-   - `JWT_EXPIRES_IN=1d`
-   - `CORS_ORIGIN=<url frontend>`
-4. Crear un servicio **Static Site** para `frontend/`.
-5. En frontend, definir variable de entorno:
-   - `VITE_API_URL=https://TU_BACKEND.onrender.com/api`
-
-### 4) Alternativa simple en un solo servidor
-
-También puedes lanzar todo con `docker compose up --build` en una VM (AWS EC2, DigitalOcean, Azure VM) y publicar puertos con Nginx + HTTPS (Let's Encrypt).
-
-## Despliegue en Vercel (tu opción)
-
-Puedes desplegar **frontend y backend por separado** en Vercel:
-
-### Backend en Vercel
-
-1. Importa el repositorio en Vercel.
-2. En "Root Directory" selecciona `backend`.
-3. Configura variables de entorno del backend:
-   - `NODE_ENV=production`
-   - `MONGO_URI=<tu_uri_mongodb_atlas>`
-   - `JWT_SECRET=<secreto_muy_largo>`
-   - `JWT_EXPIRES_IN=1d`
-   - `CORS_ORIGIN=<url_frontend_vercel>`
-   - `CORS_ORIGIN_SUFFIXES=.vercel.app,.tu-dominio.com`
-4. Deploy.
-
-Se añadió `backend/vercel.json` y `backend/api/index.js` para ejecutar Express como función serverless en Vercel.
-
-### Frontend en Vercel
-
-1. Crea otro proyecto en Vercel del mismo repo.
-2. En "Root Directory" selecciona `frontend`.
-3. Variable de entorno:
-   - `VITE_API_URL=https://<tu-backend>.vercel.app/api`
-4. Deploy.
-
-Se añadió `frontend/vercel.json` para soportar rutas SPA con React Router.
-
-## Usuario dueño automático
-
-Al iniciar el backend (local o Vercel), el sistema intenta crear el usuario dueño `lopezjr@spadd.net`; si ya existe, continúa sin error:
-
-- Email: `lopezjr@spadd.net`
-- Contraseña: `Spadd001!`
-- Rol: `admin`
-
-> Recomendación: cambiar la contraseña después del primer acceso por seguridad.
-
-## Nota para Vercel + MongoDB
-
-Si Vercel ya tiene acceso a MongoDB, el punto más común que impide funcionar al frontend es CORS.
-
-- En backend define `CORS_ORIGIN` con tu dominio frontend (puedes poner varios separados por coma).
-- Si usas varios subdominios o previews, usa `CORS_ORIGIN_SUFFIXES`.
-- Ejemplo:
-
-```env
 CORS_ORIGIN=http://localhost:5173,https://tu-frontend.vercel.app
 CORS_ORIGIN_SUFFIXES=.vercel.app,.spadd.net
-```
 
-Con `CORS_ORIGIN_SUFFIXES` puedes permitir orígenes por sufijo sin listar cada subdominio.
-
-## MongoDB: creación de colecciones
-
-En MongoDB no se crean tablas manualmente como en MySQL. En este proyecto:
-
-- La colección `users` se crea automáticamente al iniciar backend (por el bootstrap del usuario dueño).
-- La colección `clients` se crea al guardar el primer cliente.
-- La colección `visits` se crea al guardar la primera visita.
-
-Si backend ya conecta a Atlas, no necesitas crear estructuras manuales.
-
-## Nota de configuración de API en frontend
-
-El frontend normaliza automáticamente `VITE_API_URL` para que termine en `/api`.
-
-Ejemplos válidos:
-- `VITE_API_URL=https://tu-backend.vercel.app`
-- `VITE_API_URL=https://tu-backend.vercel.app/api`
-
-
-## Permisos de MongoDB Atlas requeridos
-
-Si en Vercel ves errores como `user is not allowed to do action [find]`, el usuario de MongoDB no tiene permisos suficientes.
-
-Asigna al usuario de Atlas el rol:
-- `readWrite` sobre la base donde se conecta `MONGO_URI` (por ejemplo `VisitaClientesProveedores`)
-
-Opcionalmente puedes desactivar la creación automática del dueño con:
-
-```env
-OWNER_AUTOCREATE=false
-```
-
-## Versionado visible en frontend
-
-Puedes mostrar una versión en login/registro para identificar despliegues:
-
-```env
-VITE_APP_VERSION=1.0.3
-```
-
-Si no se define, se mostrará `dev`.
-
-
-Si quieres que el backend mantenga la contraseña por defecto del dueño en cada arranque, usa:
-
-```env
+# Usuario dueño (se crea automáticamente al iniciar)
+OWNER_AUTOCREATE=true
 OWNER_SYNC_PASSWORD=true
+OWNER_PASSWORD=your_secure_password_here
+
+# Google Drive — fotos DPI
+GOOGLE_DRIVE_FOLDER_ID=<id_de_la_carpeta_drive>
+GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"..."}
 ```
 
-Si prefieres conservar la contraseña actual del dueño sin tocarla:
+### Frontend (`frontend/.env`)
 
 ```env
-OWNER_SYNC_PASSWORD=false
+VITE_API_URL=http://localhost:4000/api
+VITE_APP_VERSION=1.0.0
 ```
 
-## Fase 1 implementada
+---
 
-### Perfil de usuario
-- `GET /api/auth/me`
-- `PUT /api/auth/me`
-- `PUT /api/auth/me/password`
+## Ejecución local
 
-### Administración de usuarios (solo admin)
-- `GET /api/users`
-- `POST /api/users`
-- `PUT /api/users/:id`
-- `PUT /api/users/:id/reset-password`
+### Requisitos
+- Node.js 20+, npm 10+
+- MongoDB local o cuenta de MongoDB Atlas
 
-### Dashboard mejorado
-- KPIs de visitas activas, salidas del día, proveedores dentro y promedio de tiempo en sitio.
-- Versionado visible en frontend con `VITE_APP_VERSION`.
+### Backend
+```bash
+cd backend
+cp .env.example .env
+# Edita .env con tus valores
+npm install
+npm run dev
+# → http://localhost:4000
+```
 
-## Fase 2 implementada
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+# → http://localhost:5173
+```
 
-### Operación en sitio
-- `PUT /api/visits/:id/check-in`
-- `PUT /api/visits/:id/check-out`
+---
 
-### Dashboard y monitoreo
-- Alertas de visitas con más de 120 minutos en sitio.
-- Filtros por estatus y categoría en el panel de visitas.
-- Indicadores operativos para clientes/proveedores/visitas activas.
+## Despliegue en Vercel (producción actual)
 
-### Auditoría y reportes (solo admin)
-- `GET /api/audit-logs?limit=30`
-- `GET /api/reports/visits.csv`
+El proyecto se despliega en **dos proyectos Vercel separados**, ambos del mismo repositorio GitHub.
+
+### 1. Backend (proyecto `codexjl`)
+
+1. Importar repo → **Root Directory**: `backend`
+2. Variables de entorno requeridas:
+
+| Variable | Valor |
+|----------|-------|
+| `NODE_ENV` | `production` |
+| `MONGO_URI` | URI de MongoDB Atlas |
+| `JWT_SECRET` | String largo y aleatorio |
+| `JWT_EXPIRES_IN` | `1d` |
+| `CORS_ORIGIN` | URL del frontend |
+| `CORS_ORIGIN_SUFFIXES` | `.vercel.app,.spadd.net` |
+| `OWNER_AUTOCREATE` | `true` |
+| `OWNER_SYNC_PASSWORD` | `true` |
+| `OWNER_PASSWORD` | Contraseña del admin |
+| `GOOGLE_DRIVE_FOLDER_ID` | ID de la carpeta de Drive |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | JSON completo de la cuenta de servicio |
+
+> **Nota importante:** Al agregar/modificar variables de entorno en Vercel, es necesario hacer un **Redeploy** para que tomen efecto.
+
+### 2. Frontend (proyecto visitas-frontend)
+
+1. Importar mismo repo → **Root Directory**: `frontend`
+2. Variables:
+
+| Variable | Valor |
+|----------|-------|
+| `VITE_API_URL` | `https://codexjl.vercel.app/api` |
+| `VITE_APP_VERSION` | `1.0.0` |
+
+---
+
+## Integración con Google Drive
+
+Las fotos del DPI se suben automáticamente a una carpeta de Google Drive en lugar de guardarse como base64 en MongoDB.
+
+### Configuración
+
+1. Crear un proyecto en [Google Cloud Console](https://console.cloud.google.com)
+2. Habilitar la **Google Drive API**
+3. Crear una **cuenta de servicio** y descargar el JSON de credenciales
+4. Compartir la carpeta de Drive con el email de la cuenta de servicio (rol Editor)
+5. Configurar las variables `GOOGLE_DRIVE_FOLDER_ID` y `GOOGLE_SERVICE_ACCOUNT_JSON` en Vercel
+
+### Comportamiento
+- Si el upload a Drive falla (timeout, credenciales inválidas), la foto se guarda como base64 de respaldo en MongoDB
+- Los archivos se nombran: `Categoria_Tarjeta_Nombre_YYYY-MM-DD_HH-mm.jpg`
+- Los archivos son públicamente legibles (se puede mostrar en `<img>`)
+
+---
+
+## API Endpoints
+
+### Auth
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/auth/login` | Login |
+| GET | `/api/auth/me` | Perfil actual |
+| PUT | `/api/auth/me` | Actualizar perfil |
+| PUT | `/api/auth/me/password` | Cambiar contraseña |
+
+### Visitas
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/visits` | Listar (filtros: status, category, dateFrom, dateTo) |
+| POST | `/api/visits` | Crear visita + upload foto a Drive |
+| GET | `/api/visits/:id` | Detalle |
+| PUT | `/api/visits/:id` | Actualizar |
+| DELETE | `/api/visits/:id` | Eliminar |
+| PUT | `/api/visits/:id/check-in` | Registrar entrada |
+| PUT | `/api/visits/:id/check-out` | Registrar salida |
+
+### Clientes
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/clients` | Listar |
+| POST | `/api/clients` | Crear |
+| GET | `/api/clients/:id` | Detalle |
+| PUT | `/api/clients/:id` | Actualizar |
+| DELETE | `/api/clients/:id` | Eliminar |
+
+### Usuarios (solo admin)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/users` | Listar usuarios |
+| POST | `/api/users` | Crear usuario |
+| PUT | `/api/users/:id` | Actualizar usuario |
+| PUT | `/api/users/:id/reset-password` | Resetear contraseña |
+
+### Reportes y auditoría (solo admin)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/reports/visits.csv` | Exportar visitas en CSV |
+| GET | `/api/audit-logs` | Logs de auditoría |
+
+### Configuración de tipos de visita
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/visit-types` | Obtener configuración |
+| PUT | `/api/visit-types` | Actualizar etiquetas y colores |
+
+---
+
+## Usuario administrador por defecto
+
+Al iniciar el backend por primera vez, se crea automáticamente:
+
+- **Email:** `lopezjr@spadd.net`
+- **Rol:** `admin`
+- **Contraseña:** definida en `OWNER_PASSWORD`
+
+Para desactivar la creación automática: `OWNER_AUTOCREATE=false`
+
+---
+
+## Notas de producción
+
+- El backend corre como **función serverless en Vercel** (máx. 10s por request en plan hobby)
+- El body parser de Vercel está **deshabilitado** (`bodyParser: false`) para permitir que Express maneje cuerpos de hasta 5MB (fotos base64)
+- Los errores de Mongoose (ValidationError, CastError) devuelven HTTP 400
+- Todos los endpoints protegidos requieren header `Authorization: Bearer <token>`
+- CORS configurado para aceptar múltiples orígenes y sufijos de dominio
