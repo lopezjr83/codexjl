@@ -13,20 +13,31 @@ const buildDriveFileName = (body, now) => {
   return `${cat}_${badge}_${name}_${date}_${time}.jpg`;
 };
 
+const withTimeout = (promise, ms) => Promise.race([
+  promise,
+  new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms))
+]);
+
 export const createVisit = async (req, res) => {
   const now = new Date();
   const body = req.body;
+
+  console.log('[createVisit] body keys:', body ? Object.keys(body).join(', ') : 'undefined/null');
+  console.log('[createVisit] category:', body?.category, '| hasPhoto:', !!body?.dpiPhoto);
 
   // Upload DPI photo to Google Drive if present
   let dpiPhoto = body.dpiPhoto || '';
   if (dpiPhoto && process.env.GOOGLE_DRIVE_FOLDER_ID) {
     try {
       const fileName = buildDriveFileName(body, now);
-      const driveUrl = await uploadToDrive(dpiPhoto, fileName);
-      if (driveUrl) dpiPhoto = driveUrl;
+      console.log('[createVisit] Attempting Drive upload:', fileName);
+      const driveUrl = await withTimeout(uploadToDrive(dpiPhoto, fileName), 8000);
+      if (driveUrl) {
+        dpiPhoto = driveUrl;
+        console.log('[createVisit] Drive upload OK:', driveUrl);
+      }
     } catch (err) {
-      console.error('Drive upload failed, storing base64 as fallback:', err.message);
-      // Keep original base64 as fallback if Drive upload fails
+      console.error('[createVisit] Drive upload failed (fallback to base64):', err.message);
     }
   }
 
@@ -38,7 +49,10 @@ export const createVisit = async (req, res) => {
     checkedInAt: now,
     createdBy: req.user._id
   };
+
+  console.log('[createVisit] Creating visit in MongoDB...');
   const visit = await Visit.create(payload);
+  console.log('[createVisit] Visit created OK:', visit._id);
   const populated = await visit.populate('client', 'companyName contactName');
   await logAudit({ req, action: 'visit.create', entityType: 'visit', entityId: visit._id, metadata: { category: visit.category } });
   res.status(201).json(populated);
