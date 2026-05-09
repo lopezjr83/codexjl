@@ -60,6 +60,6 @@ export const uploadToDrive = async (base64, fileName) => {
     requestBody: { role: 'reader', type: 'anyone' }
   });
 
-  // Thumbnail URL — works reliably in <img> tags for public Shared Drive files
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+  // lh3 CDN URL — most reliable format for embedding Drive images in <img> tags
+  return `https://lh3.googleusercontent.com/d/${fileId}`;
 };
