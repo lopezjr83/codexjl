@@ -60,6 +60,6 @@ export const uploadToDrive = async (base64, fileName) => {
     requestBody: { role: 'reader', type: 'anyone' }
   });
 
-  // Direct image URL (renders in <img> tags)
-  return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  // Thumbnail URL — works reliably in <img> tags for public Shared Drive files
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
 };
