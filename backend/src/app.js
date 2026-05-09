@@ -42,6 +42,9 @@ const corsOptions = {
   credentials: true
 };
 
+// Required for Vercel: trust the X-Forwarded-For header from the proxy
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
