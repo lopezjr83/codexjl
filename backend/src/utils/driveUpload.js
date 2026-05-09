@@ -46,6 +46,8 @@ export const uploadToDrive = async (base64, fileName) => {
       mimeType: 'image/jpeg',
       body: stream
     },
+    // supportsAllDrives required for Shared Drives (Team Drives)
+    supportsAllDrives: true,
     fields: 'id'
   });
 
@@ -54,6 +56,7 @@ export const uploadToDrive = async (base64, fileName) => {
   // Make the file publicly readable so the app can display it
   await drive.permissions.create({
     fileId,
+    supportsAllDrives: true,
     requestBody: { role: 'reader', type: 'anyone' }
   });
 
