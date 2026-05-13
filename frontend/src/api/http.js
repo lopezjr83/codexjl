@@ -7,6 +7,10 @@ const normalizeApiBase = (url) => {
 
 const API_BASE_URL = normalizeApiBase(rawBaseUrl);
 
+// Callback to call when session expires — set by AuthProvider
+let onSessionExpired = null;
+export const setSessionExpiredHandler = (fn) => { onSessionExpired = fn; };
+
 export const request = async (path, { method = 'GET', body, token } = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
@@ -16,6 +20,12 @@ export const request = async (path, { method = 'GET', body, token } = {}) => {
     },
     body: body ? JSON.stringify(body) : undefined
   });
+
+  // Session expired — auto logout with clear message
+  if (response.status === 401) {
+    if (onSessionExpired) onSessionExpired();
+    throw new Error('Sesión expirada. Por favor inicia sesión de nuevo.');
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
