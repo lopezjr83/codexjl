@@ -14,6 +14,8 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
   const [form, setForm] = useState(emptyUser);
   const [drafts, setDrafts] = useState({});
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [resetPassUserId, setResetPassUserId] = useState(null);
+  const [resetPassValue, setResetPassValue] = useState('');
 
   const mappedUsers = useMemo(
     () => users.map((user) => ({ ...user, effectivePermissions: getEffectivePermissions(user) })),
@@ -93,11 +95,44 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
               <div className="user-card-actions">
                 <button onClick={() => setSelectedUserId(user.id)}>Permisos</button>
                 <button onClick={() => onToggleActive(user)}>{user.isActive ? 'Desactivar' : 'Activar'}</button>
-                <button className="danger" onClick={() => onResetPassword(user.id)}>Reset pass</button>
+                <button className="danger" onClick={() => { setResetPassUserId(user.id); setResetPassValue(''); }}>Reset pass</button>
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {resetPassUserId && (
+        <section className="modal-backdrop" onClick={() => setResetPassUserId(null)}>
+          <article className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Restablecer contraseña</h3>
+            <p>Ingresa la nueva contraseña para el usuario.</p>
+            <form
+              className="grid-form"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await onResetPassword(resetPassUserId, resetPassValue);
+                setResetPassUserId(null);
+                setResetPassValue('');
+              }}
+            >
+              <input
+                type="password"
+                placeholder="Nueva contraseña"
+                value={resetPassValue}
+                onChange={(e) => setResetPassValue(e.target.value)}
+                minLength={6}
+                required
+                autoFocus
+                style={{ gridColumn: '1 / -1' }}
+              />
+              <div className="modal-actions">
+                <button type="submit">Guardar contraseña</button>
+                <button type="button" className="ghost" onClick={() => setResetPassUserId(null)}>Cancelar</button>
+              </div>
+            </form>
+          </article>
+        </section>
       )}
 
       {selectedUser && (

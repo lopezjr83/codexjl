@@ -9,7 +9,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   const handleRegister = async ({ name, email, password }) => {
-    await register({ name, email, password, role: 'admin' });
+    await register({ name, email, password });
     navigate('/dashboard');
   };
 

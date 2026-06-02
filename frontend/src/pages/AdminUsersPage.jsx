@@ -70,8 +70,8 @@ export default function AdminUsersPage() {
             await request(`/users/${selectedUser.id}`, { method: 'PUT', body: { isActive: !selectedUser.isActive }, token });
             await loadUsers();
           }}
-          onResetPassword={async (id) => {
-            await request(`/users/${id}/reset-password`, { method: 'PUT', body: { newPassword: 'Temp12345!' }, token });
+          onResetPassword={async (id, newPassword) => {
+            await request(`/users/${id}/reset-password`, { method: 'PUT', body: { newPassword }, token });
           }}
           onUpdateAccess={async (id, access) => {
             await request(`/users/${id}`, { method: 'PUT', body: access, token });

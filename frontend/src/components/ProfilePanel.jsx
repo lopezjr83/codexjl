@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePanel({ user, onUpdateProfile, onChangePassword }) {
   const [profileForm, setProfileForm] = useState({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '' });
+
+  useEffect(() => {
+    setProfileForm({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '' });
+  }, [user]);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
   const [profileSaved, setProfileSaved] = useState(false);
   const [passwordSaved, setPasswordSaved] = useState(false);

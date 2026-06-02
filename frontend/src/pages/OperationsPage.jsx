@@ -364,9 +364,9 @@ export default function OperationsPage() {
           />
           <select value={historyFilters.category} onChange={(e) => setHistoryFilters({ ...historyFilters, category: e.target.value })}>
             <option value="all">Todas las categorías</option>
-            <option value="visitor">Visita</option>
-            <option value="client">Cliente</option>
-            <option value="provider">Proveedor</option>
+            <option value="visitor">{typeLabel.visitor}</option>
+            <option value="client">{typeLabel.client}</option>
+            <option value="provider">{typeLabel.provider}</option>
           </select>
           <input type="date" value={historyFilters.dateFrom} onChange={(e) => setHistoryFilters({ ...historyFilters, dateFrom: e.target.value })} />
           <input type="date" value={historyFilters.dateTo} onChange={(e) => setHistoryFilters({ ...historyFilters, dateTo: e.target.value })} />
