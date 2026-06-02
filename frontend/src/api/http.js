@@ -21,10 +21,15 @@ export const request = async (path, { method = 'GET', body, token } = {}) => {
     body: body ? JSON.stringify(body) : undefined
   });
 
-  // Session expired — auto logout with clear message
   if (response.status === 401) {
-    if (onSessionExpired) onSessionExpired();
-    throw new Error('Sesión expirada. Por favor inicia sesión de nuevo.');
+    const errorBody = await response.json().catch(() => ({}));
+    // Only trigger auto-logout for authenticated requests (not login/register)
+    if (token && onSessionExpired) onSessionExpired();
+    throw new Error(
+      token
+        ? 'Sesión expirada. Por favor inicia sesión de nuevo.'
+        : (errorBody.message || 'Credenciales inválidas')
+    );
   }
 
   if (!response.ok) {

@@ -194,7 +194,7 @@ export default function DashboardPage() {
         <section className="panel">
           <h2>Resumen del día</h2>
           <p style={{ margin: '0 0 1rem', color: 'var(--c-muted)', fontSize: '.87rem' }}>
-            {new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}
+            {new Date().toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
 
           <div className="day-summary-grid">

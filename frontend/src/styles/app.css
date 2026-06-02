@@ -83,13 +83,40 @@ button.ghost:hover { background: rgba(51,70,255,.07); box-shadow: none; }
 form { display: grid; gap: .65rem; }
 
 /* ─── Auth ───────────────────────────────────────────────────── */
+@keyframes auth-entry {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .auth-layout {
   min-height: 100vh;
   display: grid;
   place-content: center;
-  gap: 1rem;
+  gap: .875rem;
   padding: 2rem;
   background: linear-gradient(135deg, #eef1ff 0%, #e8edff 50%, #f0f3ff 100%);
+}
+.auth-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  animation: auth-entry .35s ease both;
+}
+.auth-brand-logo {
+  width: 40px;
+  height: 40px;
+  background: var(--c-navy);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(15,29,69,.25);
+}
+.auth-brand-header span {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-navy);
+  letter-spacing: -.02em;
 }
 .auth-card {
   background: var(--c-surface);
@@ -97,6 +124,7 @@ form { display: grid; gap: .65rem; }
   box-shadow: var(--shadow-lg);
   padding: 2rem;
   width: min(420px, 90vw);
+  animation: auth-entry .38s ease .05s both;
 }
 .auth-card h1, .auth-card h2 {
   margin: 0 0 .2rem;
@@ -104,15 +132,22 @@ form { display: grid; gap: .65rem; }
   font-size: 1.4rem;
 }
 .auth-card > p { margin: 0 0 1.25rem; color: var(--c-muted); font-size: .88rem; }
-.auth-layout > p { text-align: center; color: var(--c-muted); font-size: .9rem; }
+.auth-layout > p {
+  text-align: center; color: var(--c-muted); font-size: .9rem;
+  animation: auth-entry .38s ease .1s both;
+}
 .auth-layout > p a { color: var(--c-primary); font-weight: 600; text-decoration: none; }
 .auth-layout > p a:hover { text-decoration: underline; }
-.auth-layout > small { text-align: center; color: var(--c-muted); }
+.auth-layout > small {
+  text-align: center; color: var(--c-muted);
+  animation: auth-entry .38s ease .12s both;
+}
 .session-expired-banner {
   display: flex; align-items: center; gap: .5rem;
   background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;
   padding: .75rem 1rem; border-radius: .5rem; font-size: .9rem; font-weight: 500;
-  max-width: 400px; width: 100%;
+  max-width: 420px; width: 100%;
+  animation: auth-entry .35s ease both;
 }
 
 /* ─── App Shell ──────────────────────────────────────────────── */
@@ -653,7 +688,7 @@ button.success:hover { background: #166534 !important; }
   text-transform: uppercase;
   letter-spacing: .05em;
 }
-.kpi-card strong { font-size: 1.7rem; font-weight: 700; display: block; line-height: 1; }
+.kpi-card strong { font-size: 1.7rem; font-weight: 700; display: block; line-height: 1; color: var(--kpi-accent, #fff); }
 .kpi-card-sub { font-size: .78rem; opacity: .55; margin-top: .3rem; }
 .kpi-card h3 { display: flex; align-items: center; gap: .4rem; }
 .live-dot {
