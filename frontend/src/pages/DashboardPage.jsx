@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { request } from '../api/http';
 import AppShell from '../components/AppShell';
+import EmptyState from '../components/EmptyState';
 
 const elapsed = (checkedInAt, now) => {
   if (!checkedInAt) return null;
@@ -141,10 +142,7 @@ export default function DashboardPage() {
         </div>
 
         {activeVisits.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-state-icon">🏢</span>
-            Las instalaciones están vacías
-          </div>
+          <EmptyState icon="building">Las instalaciones están vacías</EmptyState>
         ) : (
           <div className="active-monitor-table">
             <div className="monitor-header">
@@ -230,10 +228,9 @@ export default function DashboardPage() {
         <section className="panel">
           <h2>Últimas salidas</h2>
           {completedToday.length === 0 ? (
-            <div className="empty-state" style={{ padding: '1.5rem 1rem' }}>
-              <span className="empty-state-icon">📋</span>
+            <EmptyState icon="clipboard" style={{ padding: '1.5rem 1rem' }}>
               Sin salidas registradas hoy
-            </div>
+            </EmptyState>
           ) : (
             <ul className="list">
               {completedToday.slice(-8).reverse().map((visit) => {

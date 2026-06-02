@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
+import EmptyState from '../components/EmptyState';
 import { request, API_BASE_URL } from '../api/http';
 import { useAuth } from '../contexts/AuthContext';
+
+const PAGE_SIZE = 15;
 
 const CAT_LABEL  = { visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' };
 const CAT_BADGE  = { visitor: 'badge-blue', client: 'badge-amber', provider: 'badge-green' };
@@ -28,6 +31,7 @@ export default function ReportsPage() {
   });
   const [sortKey, setSortKey]   = useState('checkedInAt');
   const [sortDir, setSortDir]   = useState('desc');
+  const [page, setPage]         = useState(1);
 
   useEffect(() => {
     (async () => {
@@ -121,6 +125,15 @@ export default function ReportsPage() {
     }
   };
 
+  // Reset to page 1 when filters or sort change
+  useEffect(() => { setPage(1); }, [filters, sortKey, sortDir]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+
   const setF = (patch) => setFilters((prev) => ({ ...prev, ...patch }));
   const clearFilters = () => setFilters({ search: '', category: 'all', status: 'all', dateFrom: '', dateTo: '' });
   const hasFilters = filters.search || filters.category !== 'all' || filters.status !== 'all' || filters.dateFrom || filters.dateTo;
@@ -199,14 +212,9 @@ export default function ReportsPage() {
         </div>
 
         {loading ? (
-          <div className="empty-state">
-            <span className="empty-state-icon">⏳</span>Cargando registros…
-          </div>
+          <EmptyState icon="clock">Cargando registros…</EmptyState>
         ) : filtered.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-state-icon">📂</span>
-            Sin resultados para los filtros aplicados
-          </div>
+          <EmptyState icon="folder">Sin resultados para los filtros aplicados</EmptyState>
         ) : (
           <div className="table-wrap">
             <table className="history-table rpt-table">
@@ -233,7 +241,7 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((v) => (
+                {paged.map((v) => (
                   <tr key={v._id}>
                     <td><strong style={{ color: 'var(--c-navy)' }}>{v.visitorName}</strong></td>
                     <td style={{ fontSize: '.8rem', color: 'var(--c-muted)' }}>{v.visitorDocument || '—'}</td>
@@ -266,8 +274,15 @@ export default function ReportsPage() {
           </div>
         )}
 
+        {pageCount > 1 && (
+          <div className="pagination">
+            <button className="ghost" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>← Anterior</button>
+            <span>Página {page} de {pageCount}</span>
+            <button className="ghost" onClick={() => setPage((p) => Math.min(pageCount, p + 1))} disabled={page === pageCount}>Siguiente →</button>
+          </div>
+        )}
         <p className="rpt-count">
-          Mostrando <strong>{filtered.length}</strong> de <strong>{visits.length}</strong> registros
+          Mostrando <strong>{paged.length}</strong> de <strong>{filtered.length}</strong> registros{filtered.length !== visits.length ? ` (${visits.length} total)` : ''}
         </p>
       </section>
 

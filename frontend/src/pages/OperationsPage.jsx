@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
 import DpiCapture from '../components/DpiCapture';
+import EmptyState from '../components/EmptyState';
 import { request } from '../api/http';
 import { useAuth } from '../contexts/AuthContext';
+
+const HIST_PAGE_SIZE = 10;
 
 const initialForm = {
   category: 'visitor',
@@ -31,6 +34,7 @@ export default function OperationsPage() {
   const [photoPreview, setPhotoPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState(null);
+  const [histPage, setHistPage] = useState(1);
 
   const loadVisits = async () => {
     try {
@@ -62,6 +66,9 @@ export default function OperationsPage() {
   const visibleActiveVisits = useMemo(() => activeVisits.slice(0, activeLimit), [activeVisits, activeLimit]);
   const historyVisits = useMemo(() => visits.filter((v) => v.status === 'completed'), [visits]);
 
+  // Reset history page when filters change
+  useEffect(() => { setHistPage(1); }, [historyFilters]);
+
   const filteredHistoryVisits = useMemo(() => historyVisits.filter((visit) => {
     const text = `${visit.visitorName} ${visit.hostPerson || ''} ${visit.purpose}`.toLowerCase();
     const matchesSearch = !historyFilters.search || text.includes(historyFilters.search.toLowerCase());
@@ -71,6 +78,12 @@ export default function OperationsPage() {
     const matchesTo = !historyFilters.dateTo || entryDate <= new Date(`${historyFilters.dateTo}T23:59:59`);
     return matchesSearch && matchesCategory && matchesFrom && matchesTo;
   }), [historyVisits, historyFilters]);
+
+  const histPageCount = Math.max(1, Math.ceil(filteredHistoryVisits.length / HIST_PAGE_SIZE));
+  const pagedHistoryVisits = useMemo(
+    () => filteredHistoryVisits.slice((histPage - 1) * HIST_PAGE_SIZE, histPage * HIST_PAGE_SIZE),
+    [filteredHistoryVisits, histPage]
+  );
 
   const formatDuration = (visit) => {
     if (!visit.checkedOutAt || !visit.checkedInAt) return '—';
@@ -296,10 +309,7 @@ export default function OperationsPage() {
         </div>
 
         {visibleActiveVisits.length === 0 && (
-          <div className="empty-state">
-            <span className="empty-state-icon">✅</span>
-            No hay visitas activas en este momento
-          </div>
+          <EmptyState icon="check">No hay visitas activas en este momento</EmptyState>
         )}
 
         <ul className="list active-cards-grid" style={{ '--active-cols': String(Math.min(activeLimit, 4)) }}>
@@ -373,10 +383,7 @@ export default function OperationsPage() {
         </div>
 
         {filteredHistoryVisits.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-state-icon">📂</span>
-            Sin registros de salida
-          </div>
+          <EmptyState icon="folder">Sin registros de salida</EmptyState>
         ) : (
           <div className="table-wrap">
             <table className="history-table history-table-clickable">
@@ -394,7 +401,7 @@ export default function OperationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredHistoryVisits.map((visit) => (
+                {pagedHistoryVisits.map((visit) => (
                   <tr key={visit._id} onClick={() => setSelectedVisit(visit)} className="history-row-clickable">
                     <td onClick={(e) => e.stopPropagation()}>
                       {visit.dpiPhoto
@@ -418,6 +425,14 @@ export default function OperationsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {histPageCount > 1 && (
+          <div className="pagination">
+            <button className="ghost" onClick={() => setHistPage((p) => Math.max(1, p - 1))} disabled={histPage === 1}>← Anterior</button>
+            <span>Página {histPage} de {histPageCount}</span>
+            <button className="ghost" onClick={() => setHistPage((p) => Math.min(histPageCount, p + 1))} disabled={histPage === histPageCount}>Siguiente →</button>
           </div>
         )}
       </section>

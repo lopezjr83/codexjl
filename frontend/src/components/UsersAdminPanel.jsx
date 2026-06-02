@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getEffectivePermissions } from '../utils/permissions';
+import EmptyState from './EmptyState';
 
 const emptyUser = { name: '', email: '', password: '', phone: '' };
 const permissionFields = [
@@ -74,10 +75,7 @@ export default function UsersAdminPanel({ users, onCreate, onToggleActive, onRes
       </form>
 
       {mappedUsers.length === 0 ? (
-        <div className="empty-state">
-          <span className="empty-state-icon">👥</span>
-          No hay usuarios registrados
-        </div>
+        <EmptyState icon="users">No hay usuarios registrados</EmptyState>
       ) : (
         <ul className="list">
           {mappedUsers.map((user) => (
