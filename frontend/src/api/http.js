@@ -5,7 +5,7 @@ const normalizeApiBase = (url) => {
   return clean.endsWith('/api') ? clean : `${clean}/api`;
 };
 
-const API_BASE_URL = normalizeApiBase(rawBaseUrl);
+export const API_BASE_URL = normalizeApiBase(rawBaseUrl);
 
 // Callback to call when session expires — set by AuthProvider
 let onSessionExpired = null;

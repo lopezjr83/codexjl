@@ -47,9 +47,10 @@ export default function OperationsPage() {
 
   useEffect(() => { loadVisits(); }, []);
   useEffect(() => {
+    if (!showForm) return;
     const timer = setInterval(() => setLocalNow(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [showForm]);
 
   const typeLabel = useMemo(() => ({
     visitor: visitTypes.visitor?.label || 'Visita',
@@ -83,6 +84,7 @@ export default function OperationsPage() {
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setError('');
     try {
       const payload = {
         ...form,
@@ -96,6 +98,8 @@ export default function OperationsPage() {
       setForm(initialForm);
       setShowForm(false);
       await loadVisits();
+    } catch (e) {
+      setError(e.message);
     } finally {
       setSubmitting(false);
     }

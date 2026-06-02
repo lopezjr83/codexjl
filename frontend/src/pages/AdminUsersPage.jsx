@@ -24,8 +24,12 @@ export default function AdminUsersPage() {
   };
 
   const loadVisitTypes = async () => {
-    const data = await request('/visit-types', { token });
-    setVisitTypes(data || {});
+    try {
+      const data = await request('/visit-types', { token });
+      setVisitTypes(data || {});
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   useEffect(() => {

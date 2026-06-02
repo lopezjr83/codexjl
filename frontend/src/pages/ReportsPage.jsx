@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
-import { request } from '../api/http';
+import { request, API_BASE_URL } from '../api/http';
 import { useAuth } from '../contexts/AuthContext';
 
 const CAT_LABEL  = { visitor: 'Visita', client: 'Cliente', provider: 'Proveedor' };
@@ -106,7 +106,7 @@ export default function ReportsPage() {
   const exportCSV = async () => {
     setExporting(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/reports/visits.csv`, {
+      const res = await fetch(`${API_BASE_URL}/reports/visits.csv`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const blob = await res.blob();
